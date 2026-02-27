@@ -1,0 +1,729 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explorar Proyectos - {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        border-color: rgb(34, 197, 94);
+    }
+    .category-filter:focus {
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        border-color: rgb(34, 197, 94);
+    }
+    .table-container {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    .table-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+        background: #22c55e;
+        border-radius: 3px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #16a34a;
+    }
+    .dark .table-container::-webkit-scrollbar-track {
+        background: #374151;
+    }
+    .dark .table-container::-webkit-scrollbar-thumb {
+        background: #4ade80;
+    }
+    .dark .table-container::-webkit-scrollbar-thumb:hover {
+        background: #22c55e;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        backdrop-filter: blur(2px);
+    }
+    .dark .loading-overlay {
+        background: rgba(31, 41, 55, 0.9);
+    }
+    .gradient-green-soft {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+    }
+    .stats-card {
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    .dark .stats-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .project-icon {
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .status-activo {
+        background-color: rgb(220, 252, 231);
+        color: rgb(22, 163, 74);
+        border: 1px solid rgb(187, 247, 208);
+    }
+    .status-completado {
+        background-color: rgb(219, 234, 254);
+        color: rgb(37, 99, 235);
+        border: 1px solid rgb(147, 197, 253);
+    }
+    .status-pausado {
+        background-color: rgb(254, 243, 199);
+        color: rgb(217, 119, 6);
+        border: 1px solid rgb(252, 211, 77);
+    }
+    .dark .status-activo {
+        background-color: rgba(22, 163, 74, 0.2);
+        color: rgb(134, 239, 172);
+        border: 1px solid rgb(22, 163, 74);
+    }
+    .dark .status-completado {
+        background-color: rgba(37, 99, 235, 0.2);
+        color: rgb(147, 197, 253);
+        border: 1px solid rgb(37, 99, 235);
+    }
+    .dark .status-pausado {
+        background-color: rgba(217, 119, 6, 0.2);
+        color: rgb(251, 191, 36);
+        border: 1px solid rgb(217, 119, 6);
+    }
+    .filter-container {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    @media (max-width: 768px) {
+        .filter-container {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .filter-group {
+            width: 100%;
+            min-width: unset;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <!-- Header con gradiente verde suave -->
+    <div class="gradient-green-soft p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-2">Explorar Proyectos</h1>
+                <p class="text-white text-opacity-90 text-sm">Descubre los proyectos disponibles y encuentra información detallada</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V4z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards con diseño mejorado -->
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Total Proyectos -->
+            <div class="stats-card bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-5 border border-green-200 dark:border-green-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Total Proyectos</p>
+                        <p class="text-2xl font-bold text-green-700 dark:text-green-300" id="total-count">{{ proyectos.count }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Proyectos Mostrados -->
+            <div class="stats-card bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl p-5 border border-emerald-200 dark:border-emerald-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Mostrados</p>
+                        <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-300" id="shown-count">{{ proyectos.count }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Proyectos Activos -->
+            <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Activos</p>
+                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ proyectos_activos }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categorías Disponibles -->
+            <div class="stats-card bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-5 border border-amber-200 dark:border-amber-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Categorías</p>
+                        <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ categorias.count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros mejorados -->
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div class="filter-container">
+            <!-- Búsqueda por texto -->
+            <div class="filter-group">
+                <label for="search-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Buscar por nombre o descripción
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" 
+                           id="search-input" 
+                           class="search-input w-full pl-12 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none transition-all duration-300"
+                           placeholder="Escribir aquí...">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center space-x-2">
+                        <div id="search-loading" class="hidden">
+                            <svg class="animate-spin h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <button id="clear-search" class="hidden text-gray-400 hover:text-green-500 transition-colors duration-200">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtro por categoría -->
+            <div class="filter-group">
+                <label for="category-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filtrar por categoría
+                </label>
+                <select id="category-filter" class="category-filter w-full py-3 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none transition-all duration-300">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.nombre|lower }}">{{ categoria.nombre|capfirst }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro por estado -->
+            <div class="filter-group">
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filtrar por estado
+                </label>
+                <select id="status-filter" class="category-filter w-full py-3 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none transition-all duration-300">
+                    <option value="">Todos los estados</option>
+                    <option value="activo">Activo</option>
+                    <option value="completado">Completado</option>
+                    <option value="pausado">Pausado</option>
+                </select>
+            </div>
+
+            <!-- Botón para limpiar filtros -->
+            <div>
+                <button id="clear-filters" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla con diseño mejorado -->
+    <div class="relative">
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="text-center">
+                <svg class="animate-spin h-10 w-10 text-green-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Cargando proyectos...</p>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-5">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Proyecto
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Categoría
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Estado
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Fecha Creación
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="projects-tbody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for proyecto in proyectos %}
+                    <tr class="hover:bg-green-50 dark:hover:bg-green-900/10 transition-all duration-200 project-row group" 
+                        data-search-text="{{ proyecto.nombre|lower }} {{ proyecto.descripcion|lower|default:'' }}"
+                        data-category="{{ proyecto.categoria.nombre|lower|default:'sin-categoria' }}"
+                        data-status="{{ proyecto.estado|lower|default:'sin-estado' }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-12 w-12">
+                                    <div class="project-icon h-12 w-12 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-bold text-white">
+                                            {{ proyecto.nombre.0|upper }}{{ proyecto.nombre.1|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ proyecto.nombre }}
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ proyecto.descripcion|truncatechars:50|default:"Sin descripción" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-white font-medium">
+                                {{ proyecto.categoria.nombre|default:"Sin categoría" }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge status-{{ proyecto.estado|lower|default:'sin-estado' }}">
+                                {{ proyecto.get_estado_display|default:proyecto.estado|capfirst }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-medium">
+                            {{ proyecto.fecha_creacion|date:"d/m/Y"|default:"--" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <button type="button" 
+                                        class="view-project-btn inline-flex items-center px-4 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-md hover:shadow-lg" 
+                                        data-project-id="{{ proyecto.id }}"
+                                        data-project-name="{{ proyecto.nombre }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    Ver Detalles
+                                </button>
+                                {% if proyecto.url_publica %}
+                                <a href="{{ proyecto.url_publica }}" 
+                                   target="_blank"
+                                   class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-md hover:shadow-lg">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                    Visitar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="no-projects-row">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <p class="text-lg font-medium mb-2">No hay proyectos disponibles</p>
+                            <p class="text-sm">Los proyectos aparecerán aquí cuando sean publicados</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Fila para mostrar cuando no hay resultados -->
+                    <tr id="no-results-row" class="hidden">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-16 h-16 text-green-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <p class="text-lg font-semibold mb-2">No se encontraron proyectos</p>
+                                <p class="text-sm">Intenta con otros términos de búsqueda o filtros</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const searchLoading = document.getElementById('search-loading');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const projectsTableBody = document.getElementById('projects-tbody');
+    const projectModal = document.getElementById('project-modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalTitle = document.getElementById('modal-title');
+    const closeModalBtn = document.getElementById('close-modal');
+    
+    // Contadores de estadísticas
+    const totalCountEl = document.getElementById('total-count');
+    const shownCountEl = document.getElementById('shown-count');
+    
+    let searchTimeout;
+    let currentProjects = [];
+    
+    // Función para mostrar loading
+    function showLoading(show = true) {
+        if (show) {
+            loadingOverlay.style.display = 'flex';
+            searchLoading.classList.remove('hidden');
+        } else {
+            loadingOverlay.style.display = 'none';
+            searchLoading.classList.add('hidden');
+        }
+    }
+    
+    // Función para filtrar proyectos localmente
+    function filterProjects() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const selectedCategory = categoryFilter.value.toLowerCase();
+        const selectedStatus = statusFilter.value.toLowerCase();
+        
+        const allRows = document.querySelectorAll('.project-row');
+        const noResultsRow = document.getElementById('no-results-row');
+        const noProjectsRow = document.getElementById('no-projects-row');
+        
+        let visibleCount = 0;
+        
+        allRows.forEach(row => {
+            const searchText = row.dataset.searchText || '';
+            const category = row.dataset.category || '';
+            const status = row.dataset.status || '';
+            
+            const matchesSearch = !searchTerm || searchText.includes(searchTerm);
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+            const matchesStatus = !selectedStatus || status === selectedStatus;
+            
+            if (matchesSearch && matchesCategory && matchesStatus) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Mostrar/ocultar mensaje de "sin resultados"
+        if (visibleCount === 0 && allRows.length > 0) {
+            noResultsRow.classList.remove('hidden');
+            if (noProjectsRow) noProjectsRow.style.display = 'none';
+        } else {
+            noResultsRow.classList.add('hidden');
+            if (noProjectsRow && allRows.length === 0) {
+                noProjectsRow.style.display = '';
+            }
+        }
+        
+        // Actualizar contador de proyectos mostrados
+        shownCountEl.textContent = visibleCount;
+        
+        // Mostrar/ocultar botón de limpiar búsqueda
+        if (searchTerm) {
+            clearSearchBtn.classList.remove('hidden');
+        } else {
+            clearSearchBtn.classList.add('hidden');
+        }
+    }
+    
+    // Event listeners para filtros
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        showLoading(true);
+        
+        searchTimeout = setTimeout(() => {
+            filterProjects();
+            showLoading(false);
+        }, 300);
+    });
+    
+    categoryFilter.addEventListener('change', filterProjects);
+    statusFilter.addEventListener('change', filterProjects);
+    
+    // Limpiar búsqueda
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        filterProjects();
+    });
+    
+    // Limpiar todos los filtros
+    clearFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        categoryFilter.value = '';
+        statusFilter.value = '';
+        clearSearchBtn.classList.add('hidden');
+        filterProjects();
+        
+        // Mostrar notificación
+        Swal.fire({
+            icon: 'success',
+            title: 'Filtros limpiados',
+            text: 'Se han restablecido todos los filtros',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+    
+    // Event listener para botones "Ver Detalles"
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-project-btn')) {
+            const btn = e.target.closest('.view-project-btn');
+            const projectId = btn.dataset.projectId;
+            const projectName = btn.dataset.projectName;
+            
+            showProjectDetails(projectId, projectName);
+        }
+    });
+    
+    // Función para mostrar detalles del proyecto
+    function showProjectDetails(projectId, projectName) {
+        modalTitle.textContent = `Detalles: ${projectName}`;
+        modalContent.innerHTML = `
+            <div class="flex justify-center items-center h-32">
+                <svg class="animate-spin h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="ml-3 text-gray-600 dark:text-gray-400">Cargando detalles...</span>
+            </div>
+        `;
+        
+        // Mostrar modal
+        projectModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Hacer petición AJAX para obtener detalles
+        fetch(`/api/proyecto/${projectId}/detalle/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderProjectDetails(data.proyecto);
+                } else {
+                    showError('Error al cargar los detalles: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showError('Error de conexión al cargar los detalles');
+                console.error('Error:', error);
+            });
+    }
+    
+    // Función para renderizar detalles del proyecto
+    function renderProjectDetails(proyecto) {
+        const tecnologias = proyecto.tecnologias && proyecto.tecnologias.length > 0 
+            ? proyecto.tecnologias.map(tech => `<span class="inline-block bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full mr-2 mb-2">${tech}</span>`).join('')
+            : '<span class="text-gray-500 dark:text-gray-400">No especificadas</span>';
+        
+        const colaboradores = proyecto.colaboradores && proyecto.colaboradores.length > 0
+            ? proyecto.colaboradores.map(colab => `<span class="inline-block bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full mr-2 mb-2">${colab}</span>`).join('')
+            : '<span class="text-gray-500 dark:text-gray-400">Sin colaboradores</span>';
+        
+        modalContent.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Información básica -->
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">DESCRIPCIÓN</h4>
+                        <p class="text-gray-900 dark:text-white text-sm leading-relaxed">${proyecto.descripcion || 'Sin descripción disponible'}</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">CATEGORÍA</h4>
+                        <span class="inline-block bg-amber-100 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-3 py-1 rounded-full text-sm font-medium">
+                            ${proyecto.categoria.nombre}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">ESTADO</h4>
+                        <span class="status-badge status-${proyecto.estado.toLowerCase()}">
+                            ${proyecto.estado}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">CREADO POR</h4>
+                        <p class="text-gray-900 dark:text-white text-sm">${proyecto.creado_por}</p>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">FECHAS</h4>
+                        <div class="text-sm text-gray-900 dark:text-white">
+                            <p><span class="font-medium">Creación:</span> ${proyecto.fecha_creacion}</p>
+                            <p><span class="font-medium">Última actualización:</span> ${proyecto.fecha_actualizacion}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">TECNOLOGÍAS</h4>
+                        <div>${tecnologias}</div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">COLABORADORES</h4>
+                        <div>${colaboradores}</div>
+                    </div>
+                    
+                    ${proyecto.url_publica ? `
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">ENLACES</h4>
+                        <div class="space-y-2">
+                            <a href="${proyecto.url_publica}" target="_blank" class="inline-flex items-center text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                Visitar proyecto
+                            </a>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600 flex justify-end space-x-3">
+                <button id="close-modal-btn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors duration-200">
+                    Cerrar
+                </button>
+                ${proyecto.url_publica ? `
+                <a href="${proyecto.url_publica}" target="_blank" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 inline-flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    Visitar Proyecto
+                </a>
+                ` : ''}
+            </div>
+        `;
+        
+        // Event listener para el botón cerrar dentro del contenido
+        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+    }
+    
+    // Función para mostrar errores
+    function showError(message) {
+        modalContent.innerHTML = `
+            <div class="text-center py-8">
+                <svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-red-600 dark:text-red-400 font-medium">${message}</p>
+                <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    Cerrar
+                </button>
+            </div>
+        `;
+    }
+    
+    // Función para cerrar modal
+    function closeModal() {
+        projectModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Event listeners para cerrar modal
+    closeModalBtn.addEventListener('click', closeModal);
+    
+    // Cerrar modal al hacer clic fuera
+    projectModal.addEventListener('click', function(e) {
+        if (e.target === projectModal) {
+            closeModal();
+        }
+    });
+    
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !projectModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    
+    // Inicializar filtros en carga de página
+    filterProjects();
+});
+</script>
+
+{% endblock %}

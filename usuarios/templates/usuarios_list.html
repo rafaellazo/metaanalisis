@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios - {{ block.super }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: rgb(59, 130, 246);
+    }
+    .role-filter:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: rgb(59, 130, 246);
+    }
+    .table-container {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    .table-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+        background: #3b82f6;
+        border-radius: 3px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #2563eb;
+    }
+    .dark .table-container::-webkit-scrollbar-track {
+        background: #374151;
+    }
+    .dark .table-container::-webkit-scrollbar-thumb {
+        background: #60a5fa;
+    }
+    .dark .table-container::-webkit-scrollbar-thumb:hover {
+        background: #3b82f6;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        backdrop-filter: blur(2px);
+    }
+    .dark .loading-overlay {
+        background: rgba(31, 41, 55, 0.9);
+    }
+    .gradient-blue-soft {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    }
+    .stats-card {
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    .dark .stats-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .user-avatar {
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    .role-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .filter-container {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    @media (max-width: 768px) {
+        .filter-container {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .filter-group {
+            width: 100%;
+            min-width: unset;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+    <!-- Header con gradiente azul suave -->
+    <div class="gradient-blue-soft p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-2">Gestión de Usuarios</h1>
+                <p class="text-white text-opacity-90 text-sm">Administra los usuarios del sistema de manera eficiente</p>
+            </div>
+            <div class="bg-white bg-opacity-20 rounded-xl p-4 backdrop-blur-sm">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards con diseño mejorado -->
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Total Usuarios -->
+            <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">Total Usuarios</p>
+                        <p class="text-2xl font-bold text-blue-700 dark:text-blue-300" id="total-count">{{ usuarios.count }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Usuarios Mostrados -->
+            <div class="stats-card bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-xl p-5 border border-emerald-200 dark:border-emerald-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Mostrados</p>
+                        <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-300" id="shown-count">{{ usuarios.count }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Roles Disponibles -->
+            <div class="stats-card bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-5 border border-amber-200 dark:border-amber-800">
+                <div class="flex items-center">
+                    <div class="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Roles</p>
+                        <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ roles.count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros mejorados -->
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div class="filter-container">
+            <!-- Búsqueda por texto -->
+            <div class="filter-group">
+                <label for="search-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Buscar por nombre, email o usuario
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" 
+                           id="search-input" 
+                           class="search-input w-full pl-12 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none transition-all duration-300"
+                           placeholder="Escribir aquí...">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center space-x-2">
+                        <div id="search-loading" class="hidden">
+                            <svg class="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <button id="clear-search" class="hidden text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtro por rol -->
+            <div class="filter-group">
+                <label for="role-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Filtrar por rol
+                </label>
+                <select id="role-filter" class="role-filter w-full py-3 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none transition-all duration-300">
+                    <option value="">Todos los roles</option>
+                    {% for role in roles %}
+                        <option value="{{ role.name|lower }}">{{ role.name|capfirst }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Botón para limpiar filtros -->
+            <div>
+                <button id="clear-filters" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-xl transition-colors duration-200 shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Limpiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla con diseño mejorado -->
+    <div class="relative">
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="text-center">
+                <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Procesando...</p>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-5">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Usuario
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Rol
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Registro
+                        </th>
+                        <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for usuario in usuarios %}
+                    <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-200 user-row group" 
+                        data-search-text="{{ usuario.get_full_name|default:usuario.username|lower }} {{ usuario.email|lower }} {{ usuario.username|lower }}"
+                        data-role="{{ usuario.profile.role.name|lower|default:'sin-rol' }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-12 w-12">
+                                    <div class="user-avatar h-12 w-12 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-bold text-white">
+                                            {{ usuario.first_name.0|default:usuario.username.0|upper }}{{ usuario.last_name.0|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {{ usuario.get_full_name|default:usuario.username }}
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        @{{ usuario.username }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-white font-medium">{{ usuario.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <select class="role-select bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:outline-none p-2.5 transition-all duration-200" 
+                                    data-user-id="{{ usuario.id }}">
+                                <option value="" {% if not usuario.profile.role %}selected{% endif %}></option>
+                                {% for role in roles %}
+                                    <option value="{{ role.id }}" {% if usuario.profile.role.id == role.id %}selected{% endif %}>
+                                        {{ role.name|capfirst }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-medium">
+                            {{ usuario.date_joined|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {% if usuario != user %}
+                            <button type="button" 
+                                    class="delete-user-btn inline-flex items-center px-4 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-md hover:shadow-lg" 
+                                    data-user-id="{{ usuario.id }}"
+                                    data-user-name="{{ usuario.get_full_name|default:usuario.username }}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Eliminar
+                            </button>
+                            {% else %}
+                            <span class="inline-flex items-center px-4 py-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-lg font-medium">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Usuario Actual
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="no-users-row">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <p class="text-lg font-medium mb-2">No hay usuarios registrados</p>
+                            <p class="text-sm">El sistema está esperando el primer registro</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Fila para mostrar cuando no hay resultados -->
+                    <tr id="no-results-row" class="hidden">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-16 h-16 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <p class="text-lg font-semibold mb-2">No se encontraron usuarios</p>
+                                <p class="text-sm">Intenta con otros términos de búsqueda o filtros</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const roleFilter = document.getElementById('role-filter');
+    const clearFilters = document.getElementById('clear-filters');
+    const searchLoading = document.getElementById('search-loading');
+    const clearSearch = document.getElementById('clear-search');
+    const userRows = document.querySelectorAll('.user-row');
+    const noResultsRow = document.getElementById('no-results-row');
+    const noUsersRow = document.getElementById('no-users-row');
+    const totalCount = document.getElementById('total-count');
+    const shownCount = document.getElementById('shown-count');
+    const tbody = document.getElementById('users-tbody');
+    
+    let searchTimeout;
+    let originalTotalCount = parseInt(totalCount.textContent) || userRows.length;
+    
+    // Función de filtrado combinada
+    function performFilter() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const roleFilterValue = roleFilter.value.toLowerCase().trim();
+        let visibleCount = 0;
+        
+        userRows.forEach(row => {
+            const searchText = row.dataset.searchText;
+            const userRole = row.dataset.role;
+            
+            let showBySearch = !searchTerm || (searchText && searchText.includes(searchTerm));
+            let showByRole = !roleFilterValue || userRole === roleFilterValue;
+            
+            if (showBySearch && showByRole) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Mostrar/ocultar mensajes
+        if (visibleCount === 0 && (searchTerm || roleFilterValue)) {
+            noResultsRow.classList.remove('hidden');
+        } else {
+            noResultsRow.classList.add('hidden');
+        }
+        
+        if (noUsersRow) {
+            if (originalTotalCount === 0 && !searchTerm && !roleFilterValue) {
+                noUsersRow.style.display = '';
+            } else {
+                noUsersRow.style.display = 'none';
+            }
+        }
+        
+        // Mostrar/ocultar botón limpiar búsqueda
+        if (searchTerm) {
+            clearSearch.classList.remove('hidden');
+        } else {
+            clearSearch.classList.add('hidden');
+        }
+        
+        // Actualizar contador
+        shownCount.textContent = visibleCount;
+    }
+    
+    // Event listeners para filtros
+    searchInput.addEventListener('input', function() {
+        if (searchLoading) searchLoading.classList.remove('hidden');
+        
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            performFilter();
+            if (searchLoading) searchLoading.classList.add('hidden');
+        }, 300);
+    });
+    
+    roleFilter.addEventListener('change', performFilter);
+    
+    // Limpiar filtros
+    if (clearFilters) {
+        clearFilters.addEventListener('click', function() {
+            searchInput.value = '';
+            roleFilter.value = '';
+            performFilter();
+        });
+    }
+    
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            performFilter();
+        });
+    }
+    
+    // Tecla Escape para limpiar
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            this.value = '';
+            performFilter();
+            this.blur();
+        }
+    });
+
+    // Manejar eliminación de usuarios
+    const deleteButtons = document.querySelectorAll('.delete-user-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.getAttribute('data-user-name');
+            
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Quieres eliminar al usuario "${userName}"? Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar overlay de carga
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+                    
+                    // Usar URL con namespace
+                    const deleteUrl = "{% url 'delete_user' 0 %}".replace('0', userId);
+                    
+                    fetch(deleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Eliminado!',
+                                text: data.message,
+                                icon: 'success',
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                            }).then(() => {
+                                // Remover la fila del DOM
+                                const userRow = button.closest('tr');
+                                if (userRow) userRow.remove();
+                                
+                                // Actualizar contadores
+                                originalTotalCount = Math.max(0, originalTotalCount - 1);
+                                totalCount.textContent = originalTotalCount;
+                                
+                                // Reejecutar filtros para actualizar contador mostrado
+                                performFilter();
+                                
+                                // Si no quedan usuarios, mostrar mensaje
+                                const remainingRows = document.querySelectorAll('.user-row');
+                                if (remainingRows.length === 0 && noUsersRow) {
+                                    noUsersRow.style.display = '';
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.error || 'Error al eliminar el usuario',
+                                icon: 'error',
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error al eliminar el usuario',
+                            icon: 'error',
+                            background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                        });
+                    });
+                }
+            });
+        });
+    });
+    
+    // Manejar cambio de rol
+    const roleSelects = document.querySelectorAll('.role-select');
+    roleSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const userId = this.getAttribute('data-user-id');
+            const newRoleId = this.value;
+            const currentRole = this.getAttribute('data-current-role');
+            const newRoleName = newRoleId ? this.options[this.selectedIndex].text : 'Sin rol';
+            
+            Swal.fire({
+                title: '¿Cambiar rol?',
+                text: `¿Quieres cambiar el rol del usuario a "${newRoleName}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar',
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+                    
+                    // Usar URL con namespace
+                    const changeRoleUrl = "{% url 'change_user_role' 0 %}".replace('0', userId);
+                    
+                    fetch(changeRoleUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            role_id: newRoleId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Actualizado!',
+                                text: data.message,
+                                icon: 'success',
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                            });
+                            // Actualizar el atributo data-current-role y data-role
+                            this.setAttribute('data-current-role', newRoleName.toLowerCase());
+                            const userRow = this.closest('tr');
+                            if (userRow) {
+                                userRow.setAttribute('data-role', newRoleName.toLowerCase().replace(' ', '-'));
+                            }
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.error || 'Error al cambiar el rol',
+                                icon: 'error',
+                                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                            });
+                            // Revertir selección
+                            revertRoleSelection(this, currentRole);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error al cambiar el rol',
+                            icon: 'error',
+                            background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+                            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000'
+                        });
+                        // Revertir selección
+                        revertRoleSelection(this, currentRole);
+                    });
+                } else {
+                    // Revertir selección si se cancela
+                    revertRoleSelection(this, currentRole);
+                }
+            });
+        });
+    });
+    
+    // Función para revertir selección de rol
+    function revertRoleSelection(selectElement, currentRole) {
+        if (currentRole === 'sin-rol') {
+            selectElement.value = '';
+        } else {
+            const currentRoleOption = Array.from(selectElement.options).find(option => 
+                option.text.toLowerCase() === currentRole.toLowerCase()
+            );
+            if (currentRoleOption) {
+                selectElement.value = currentRoleOption.value;
+            }
+        }
+    }
+    
+    // Función para obtener CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Inicializar contadores al cargar la página
+    function initializeCounters() {
+        const visibleRows = Array.from(userRows).filter(row => 
+            row.style.display !== 'none'
+        );
+        shownCount.textContent = visibleRows.length;
+        totalCount.textContent = originalTotalCount;
+    }
+    
+    // Ejecutar inicialización
+    initializeCounters();
+});
+</script>
+{% endblock %}
