@@ -1,0 +1,678 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invitar Usuario - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon" aria-label="Ir al inicio">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon" aria-label="Ver mis proyectos">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon" aria-label="Ver detalles de {{ proyecto.nombre }}">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300" aria-current="page">Invitar Usuario</span>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+                <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300{% elif message.tags == 'error' %}bg-red-50 dark:bg-red-900 dark:bg-opacity-20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300{% elif message.tags == 'warning' %}bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300{% else %}bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300{% endif %}">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            {% if message.tags == 'success' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            {% elif message.tags == 'error' %}
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            {% else %}
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            {% endif %}
+                        </svg>
+                        <span>{{ message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-8">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center space-x-3">
+                        <svg class="w-8 h-8 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        <span>Invitar Usuario</span>
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">Agrega nuevos colaboradores a <strong class="text-gray-900 dark:text-white">{{ proyecto.nombre }}</strong></p>
+                </div>
+                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>Volver</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Invitación -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <div class="flex">
+                <button type="button" onclick="cambiarTab('usuario')" id="tab-usuario" class="tab-btn flex-1 px-6 py-4 text-center font-semibold transition-all duration-200 border-b-2">
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>Buscar Usuario</span>
+                    </div>
+                </button>
+                <button type="button" onclick="cambiarTab('email')" id="tab-email" class="tab-btn flex-1 px-6 py-4 text-center font-semibold transition-all duration-200 border-b-2">
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Por Correo Electrónico</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenido de los tabs -->
+        <div class="p-8">
+            <!-- Tab: Por Usuario (con buscador AJAX) -->
+            <div id="content-usuario" class="tab-content">
+                <form method="POST" action="{% url 'invitar_usuario' proyecto.id %}" id="form-usuario" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="metodo" value="usuario">
+                    <input type="hidden" name="usuario_id" id="usuario_id_seleccionado">
+                    
+                    <!-- Info Box -->
+                    <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex-1">
+                                <h3 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">Buscar usuario registrado</h3>
+                                <p class="text-sm text-blue-700 dark:text-blue-400">Busca por nombre, apellido, nombre de usuario o correo electrónico. El usuario se agregará inmediatamente como colaborador.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campo de Búsqueda -->
+                    <div>
+                        <label for="buscar_usuario" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Buscar Usuario
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="buscar_usuario" 
+                                   autocomplete="off"
+                                   placeholder="Escribe para buscar..." 
+                                   class="pl-10 w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200"
+                                   aria-label="Buscar usuario registrado">
+                            
+                            <!-- Spinner de carga -->
+                            <div id="spinner-busqueda" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg class="animate-spin h-5 w-5 text-primary dark:text-primary-neon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Resultados de búsqueda -->
+                        <div id="resultados-busqueda" class="hidden mt-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                            <!-- Los resultados se cargarán aquí dinámicamente -->
+                        </div>
+                        
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Escribe al menos 2 caracteres para buscar. Solo se mostrarán usuarios que no sean miembros del proyecto.
+                        </p>
+                    </div>
+
+                    <!-- Usuario seleccionado -->
+                    <div id="usuario-seleccionado" class="hidden p-4 bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div id="avatar-seleccionado" class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center text-white font-bold text-lg">
+                                    <!-- Iniciales -->
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 dark:text-white" id="nombre-seleccionado"></p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400" id="username-seleccionado"></p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500" id="email-seleccionado"></p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="limpiarSeleccion()" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300" aria-label="Eliminar selección">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="flex items-center justify-end space-x-3 pt-4">
+                        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-semibold">
+                            Cancelar
+                        </a>
+                        <button type="submit" id="btn-agregar-usuario" disabled class="px-6 py-3 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Agregar Usuario</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab: Por Email -->
+            <div id="content-email" class="tab-content hidden">
+                {% if not invitacion %}
+                    <!-- Formulario para generar invitación -->
+                    <form method="POST" action="{% url 'invitar_usuario' proyecto.id %}" id="form-email" class="space-y-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="metodo" value="email">
+                        
+                        <!-- Info Box -->
+                        <div class="bg-purple-50 dark:bg-purple-900 dark:bg-opacity-20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-1">Invitar por correo electrónico</h3>
+                                    <p class="text-sm text-purple-700 dark:text-purple-400">Ingresa el correo del destinatario para generar un enlace de invitación. Se abrirá Gmail Web para que puedas enviarlo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campo Email del destinatario -->
+                        <div>
+                            <label for="destinatario_email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Correo del Destinatario
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" 
+                                   id="destinatario_email" 
+                                   name="destinatario_email" 
+                                   required
+                                   placeholder="Ej: usuario@gmail.com o usuario@unemi.edu.ec" 
+                                   class="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-200"
+                                   aria-label="Correo del destinatario">
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Solo se permiten correos de Gmail (@gmail.com) o UNEMI (@unemi.edu.ec)
+                            </p>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="flex items-center justify-end space-x-3 pt-4">
+                            <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-semibold">
+                                Cancelar
+                            </a>
+                            <button type="submit" id="btn-generar-invitacion" class="px-6 py-3 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                <span>Generar Invitación</span>
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <!-- Invitación generada exitosamente -->
+                    <div class="space-y-6">
+                        <!-- Success Message -->
+                        <div class="bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-green-800 dark:text-green-300 mb-2">¡Invitación generada exitosamente!</h3>
+                                    <p class="text-sm text-green-700 dark:text-green-400">
+                                        Se ha creado un enlace de invitación para <strong>{{ destinatario_email }}</strong>. 
+                                        Usa las opciones de abajo para enviar la invitación.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enlace de invitación -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Enlace de Invitación
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" 
+                                       id="enlace-invitacion-input"
+                                       value="{{ enlace_invitacion }}" 
+                                       readonly
+                                       class="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm">
+                                <button type="button" 
+                                        onclick="copiarEnlace()"
+                                        class="px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span>Copiar</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Opciones de envío -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Opción Gmail -->
+                            <button type="button" 
+                                    onclick="abrirClienteCorreo()"
+                                    class="p-6 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-2 border-red-200 dark:border-red-800 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-left">
+                                <div class="flex items-start space-x-4">
+                                    <div class="p-3 bg-red-500 rounded-lg">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Enviar por Gmail</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Abre Gmail Web con el mensaje pre-escrito</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <!-- Opción WhatsApp -->
+                            <a href="https://wa.me/?text={{ 'Hola! Te invito a unirte al proyecto ' | urlencode }}{{ proyecto.nombre | urlencode }}{{ ': ' | urlencode }}{{ enlace_invitacion | urlencode }}" 
+                               target="_blank"
+                               class="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-800 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-left">
+                                <div class="flex items-start space-x-4">
+                                    <div class="p-3 bg-green-500 rounded-lg">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Compartir por WhatsApp</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Envía el enlace directamente por WhatsApp</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">¿Qué sucede ahora?</h4>
+                                    <ul class="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
+                                        <li>El destinatario recibirá el enlace de invitación</li>
+                                        <li>Al hacer clic, podrá registrarse si no tiene cuenta</li>
+                                        <li>Si ya tiene cuenta, debe iniciar sesión con el correo <strong>{{ destinatario_email }}</strong></li>
+                                        <li>Automáticamente se unirá al proyecto como colaborador</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="flex items-center justify-between pt-4">
+                            <button type="button" 
+                                    onclick="window.location.href='{% url 'invitar_usuario' proyecto.id %}'"
+                                    class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 font-semibold flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <span>Enviar otra invitación</span>
+                            </button>
+                            
+                            <a href="{% url 'detalle_proyecto' proyecto.id %}" 
+                               class="px-6 py-3 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200 font-semibold flex items-center space-x-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>Volver al Proyecto</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Informativa -->
+    <div class="mt-6 bg-gradient-to-br from-primary/5 to-primary-dark/5 dark:from-primary-neon/10 dark:to-primary/10 rounded-xl p-6 border border-primary/20 dark:border-primary-neon/20">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Información sobre invitaciones
+        </h3>
+        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Los usuarios invitados se agregarán con el rol de <strong class="text-gray-900 dark:text-white">Colaborador</strong> por defecto.</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Puedes cambiar el rol de cualquier miembro desde la página de detalles del proyecto.</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Solo se permiten correos de <strong class="text-gray-900 dark:text-white">Gmail</strong> o <strong class="text-gray-900 dark:text-white">UNEMI</strong> para invitaciones externas.</span>
+            </li>
+            <li class="flex items-start">
+                <svg class="w-5 h-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>El destinatario debe iniciar sesión con el correo invitado para aceptar la invitación.</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let busquedaTimeout;
+let usuarioSeleccionado = null;
+
+// Función para cambiar de tab
+function cambiarTab(tab) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(t => {
+        t.classList.remove('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+        t.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+    });
+    
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(c => c.classList.add('hidden'));
+    
+    const activeTab = document.getElementById(`tab-${tab}`);
+    activeTab.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+    activeTab.classList.add('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+    
+    document.getElementById(`content-${tab}`).classList.remove('hidden');
+    
+    if (tab === 'usuario') {
+        limpiarSeleccion();
+    } else if (tab === 'email') {
+        const destinatarioField = document.getElementById('destinatario_email');
+        if (destinatarioField) {
+            destinatarioField.value = '';
+        }
+    }
+}
+
+// Función mejorada: Abre Gmail Web solo cuando se hace clic en el botón
+function abrirClienteCorreo() {
+    const destinatario = "{{ destinatario_email|escapejs }}";
+    const proyectoNombre = "{{ proyecto.nombre|escapejs }}";
+    const enlaceInvitacion = "{{ enlace_invitacion|escapejs }}";
+    const remitenteNombre = "{{ remitente_nombre|escapejs }}";
+    
+    if (!destinatario || !enlaceInvitacion) {
+        console.error('Faltan datos para generar el correo');
+        alert('Error: No se pueden generar los datos del correo. Por favor, intenta nuevamente.');
+        return;
+    }
+    
+    const asunto = `Invitación al proyecto: ${proyectoNombre}`;
+    
+    const cuerpo = `Hola,
+
+${remitenteNombre} te ha invitado a colaborar en el proyecto "${proyectoNombre}" en la plataforma de Metaanálisis UNEMI.
+
+Para unirte al proyecto, haz clic en el siguiente enlace:
+${enlaceInvitacion}
+
+Si aún no tienes una cuenta, el enlace te permitirá registrarte y unirte automáticamente al proyecto.
+
+¡Esperamos contar con tu participación!
+
+Saludos,
+${remitenteNombre}`;
+    
+    const asuntoCodificado = encodeURIComponent(asunto);
+    const cuerpoCodificado = encodeURIComponent(cuerpo);
+    
+    // Usar Gmail Web
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${destinatario}&su=${asuntoCodificado}&body=${cuerpoCodificado}`;
+    
+    // Abrir Gmail en una nueva pestaña
+    const ventanaGmail = window.open(gmailUrl, '_blank');
+    
+    // Verificar si se bloqueó el popup
+    if (!ventanaGmail || ventanaGmail.closed || typeof ventanaGmail.closed == 'undefined') {
+        alert('⚠️ Se bloqueó la ventana emergente.\n\nPor favor, permite popups para este sitio y vuelve a intentarlo.\n\nO copia el enlace de invitación manualmente.');
+    }
+}
+
+// Función para buscar usuarios
+async function buscarUsuarios(query) {
+    if (query.length < 2) {
+        document.getElementById('resultados-busqueda').classList.add('hidden');
+        return;
+    }
+    
+    document.getElementById('spinner-busqueda').classList.remove('hidden');
+    
+    try {
+        const response = await fetch(`{% url 'buscar_usuarios_disponibles' proyecto.id %}?q=${encodeURIComponent(query)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarResultados(data.usuarios);
+        } else {
+            mostrarError(data.error || 'Error al buscar usuarios');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarError('Error de conexión al buscar usuarios');
+    } finally {
+        document.getElementById('spinner-busqueda').classList.add('hidden');
+    }
+}
+
+// Función para mostrar resultados
+function mostrarResultados(usuarios) {
+    const contenedor = document.getElementById('resultados-busqueda');
+    
+    if (usuarios.length === 0) {
+        contenedor.innerHTML = `
+            <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="font-medium">No se encontraron usuarios</p>
+                <p class="text-sm mt-1">Intenta con otro término de búsqueda</p>
+            </div>
+        `;
+        contenedor.classList.remove('hidden');
+        return;
+    }
+    
+    contenedor.innerHTML = usuarios.map(usuario => `
+        <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-all duration-200 border-b border-gray-200 dark:border-gray-700 last:border-b-0"
+             onclick="seleccionarUsuario(${usuario.id}, '${usuario.nombre_completo.replace(/'/g, "\\'")}', '${usuario.username}', '${usuario.email}', '${usuario.iniciales}')">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center text-white font-bold">
+                    ${usuario.iniciales}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 dark:text-white truncate">${usuario.nombre_completo}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 truncate">@${usuario.username}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 truncate">${usuario.email}</p>
+                </div>
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </div>
+        </div>
+    `).join('');
+    
+    contenedor.classList.remove('hidden');
+}
+
+// Función para mostrar errores
+function mostrarError(mensaje) {
+    const contenedor = document.getElementById('resultados-busqueda');
+    contenedor.innerHTML = `
+        <div class="p-4 text-center text-red-500 dark:text-red-400">
+            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="font-medium">${mensaje}</p>
+        </div>
+    `;
+    contenedor.classList.remove('hidden');
+}
+
+// Función para seleccionar un usuario
+function seleccionarUsuario(id, nombreCompleto, username, email, iniciales) {
+    usuarioSeleccionado = { id, nombreCompleto, username, email, iniciales };
+    
+    document.getElementById('usuario_id_seleccionado').value = id;
+    document.getElementById('avatar-seleccionado').textContent = iniciales;
+    document.getElementById('nombre-seleccionado').textContent = nombreCompleto;
+    document.getElementById('username-seleccionado').textContent = `@${username}`;
+    document.getElementById('email-seleccionado').textContent = email;
+    document.getElementById('usuario-seleccionado').classList.remove('hidden');
+    document.getElementById('btn-agregar-usuario').disabled = false;
+    document.getElementById('resultados-busqueda').classList.add('hidden');
+    document.getElementById('buscar_usuario').value = '';
+}
+
+// Función para limpiar la selección
+function limpiarSeleccion() {
+    usuarioSeleccionado = null;
+    document.getElementById('usuario_id_seleccionado').value = '';
+    document.getElementById('usuario-seleccionado').classList.add('hidden');
+    document.getElementById('btn-agregar-usuario').disabled = true;
+    document.getElementById('buscar_usuario').value = '';
+    document.getElementById('resultados-busqueda').classList.add('hidden');
+}
+
+// Función para copiar el enlace al portapapeles
+function copiarEnlace() {
+    const enlace = "{{ enlace_invitacion|escapejs }}";
+    
+    if (!enlace) {
+        alert('No hay enlace de invitación disponible.');
+        return;
+    }
+    
+    const tempInput = document.createElement('input');
+    tempInput.value = enlace;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    
+    try {
+        document.execCommand('copy');
+        alert('¡Enlace copiado al portapapeles!\n\nPuedes enviarlo por WhatsApp, Telegram o cualquier medio.');
+    } catch (err) {
+        console.error('Error al copiar:', err);
+        alert('No se pudo copiar automáticamente. Copia el enlace manualmente.');
+    }
+    
+    document.body.removeChild(tempInput);
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const campoBusqueda = document.getElementById('buscar_usuario');
+    
+    if (campoBusqueda) {
+        campoBusqueda.addEventListener('input', function(e) {
+            clearTimeout(busquedaTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                document.getElementById('resultados-busqueda').classList.add('hidden');
+                return;
+            }
+            
+            busquedaTimeout = setTimeout(() => {
+                buscarUsuarios(query);
+            }, 300);
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!campoBusqueda.contains(e.target) && !document.getElementById('resultados-busqueda').contains(e.target)) {
+                document.getElementById('resultados-busqueda').classList.add('hidden');
+            }
+        });
+    }
+    
+    const formUsuario = document.getElementById('form-usuario');
+    if (formUsuario) {
+        formUsuario.addEventListener('submit', function(e) {
+            if (!usuarioSeleccionado) {
+                e.preventDefault();
+                alert('Por favor, selecciona un usuario de los resultados de búsqueda.');
+                return false;
+            }
+        });
+    }
+
+    const form = document.querySelector('.bg-white.dark\\:bg-gray-800');
+    if (form) {
+        form.style.opacity = '0';
+        form.style.transform = 'translateY(20px)';
+        form.style.transition = 'all 0.5s ease';
+        setTimeout(() => {
+            form.style.opacity = '1';
+            form.style.transform = 'translateY(0)';
+        }, 100);
+    }
+
+    // CAMBIO: Determinar qué tab mostrar según el contexto
+    {% if tab_activo == 'email' %}
+        cambiarTab('email');
+    {% else %}
+        cambiarTab('usuario');
+    {% endif %}
+});
+</script>
+{% endblock %}

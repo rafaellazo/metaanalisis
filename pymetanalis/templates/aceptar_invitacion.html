@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invitación al Proyecto{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full space-y-8">
+        <!-- Logo o Header -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary rounded-full flex items-center justify-center mb-4">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                Has sido invitado
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                ¡Únete a colaborar en un proyecto de investigación!
+            </p>
+        </div>
+
+        <!-- Card Principal -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {% if user.is_authenticated %}
+                <!-- Usuario autenticado -->
+                <div class="p-8 space-y-6">
+                    <!-- Información de la invitación -->
+                    <div class="bg-gradient-to-br from-primary/10 to-primary-dark/10 dark:from-primary-neon/20 dark:to-primary/20 rounded-xl p-6 border border-primary/20 dark:border-primary-neon/30">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center text-white font-bold text-2xl">
+                                    {{ proyecto.nombre|first|upper }}
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                                    {{ proyecto.nombre }}
+                                </h2>
+                                {% if proyecto.descripcion %}
+                                    <p class="text-gray-600 dark:text-gray-400 line-clamp-3">
+                                        {{ proyecto.descripcion }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información del invitador -->
+                    <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <svg class="w-12 h-12 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Invitado por</p>
+                            <p class="font-semibold text-gray-900 dark:text-white text-lg">
+                                {{ invitacion.creado_por.get_full_name|default:invitacion.creado_por.username }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Verificación de email -->
+                    {% if user.email|lower == invitacion.email_destino|lower %}
+                        <!-- Email correcto -->
+                        <div class="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl p-6">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-green-800 dark:text-green-300 text-lg mb-2">
+                                        ¡Todo listo para unirte!
+                                    </h3>
+                                    <p class="text-green-700 dark:text-green-400 mb-4">
+                                        Tu cuenta <strong>{{ user.email }}</strong> coincide con la invitación. 
+                                        Al aceptar, serás agregado como colaborador del proyecto.
+                                    </p>
+                                    
+                                    <!-- Beneficios -->
+                                    <div class="space-y-2 mb-4">
+                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">Como colaborador podrás:</p>
+                                        <ul class="space-y-1 text-sm text-green-700 dark:text-green-400">
+                                            <li class="flex items-center space-x-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>Ver y acceder a todos los documentos del proyecto</span>
+                                            </li>
+                                            <li class="flex items-center space-x-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>Colaborar en la extracción y análisis de datos</span>
+                                            </li>
+                                            <li class="flex items-center space-x-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>Participar en las discusiones del equipo</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Botón de aceptar -->
+                                    <form method="POST" action="{% url 'aceptar_invitacion' invitacion.token %}" class="mt-6">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-3">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <span>Aceptar invitación y unirme al proyecto</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Email incorrecto -->
+                        <div class="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-yellow-800 dark:text-yellow-300 text-lg mb-2">
+                                        Cuenta incorrecta
+                                    </h3>
+                                    <p class="text-yellow-700 dark:text-yellow-400 mb-4">
+                                        Esta invitación fue enviada a <strong>{{ invitacion.email_destino }}</strong>, 
+                                        pero has iniciado sesión con <strong>{{ user.email }}</strong>.
+                                    </p>
+                                    <p class="text-yellow-700 dark:text-yellow-400 mb-4">
+                                        Para aceptar la invitación, debes iniciar sesión con la cuenta correcta.
+                                    </p>
+                                    
+                                    <!-- Botones de acción -->
+                                    <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                                        <a href="{% url 'logout' %}" class="flex-1 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                            </svg>
+                                            <span>Cerrar sesión</span>
+                                        </a>
+                                        <a href="{% url 'core:home' %}" class="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                            </svg>
+                                            <span>Ir al inicio</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <!-- Usuario no autenticado -->
+                <div class="p-8 space-y-6">
+                    <!-- Información de la invitación -->
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary rounded-full mb-4">
+                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            {{ proyecto.nombre }}
+                        </h2>
+                        {% if proyecto.descripcion %}
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                                {{ proyecto.descripcion }}
+                            </p>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Invitado por <strong>{{ invitacion.creado_por.get_full_name|default:invitacion.creado_por.username }}</strong>
+                        </p>
+                    </div>
+
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-6"></div>
+
+                    <!-- Mensaje informativo -->
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-blue-800 dark:text-blue-300 text-lg mb-2">
+                                    Debes iniciar sesión para continuar
+                                </h3>
+                                <p class="text-blue-700 dark:text-blue-400 mb-4">
+                                    Para aceptar esta invitación, necesitas iniciar sesión o crear una cuenta con el correo <strong>{{ invitacion.email_destino }}</strong>
+                                </p>
+                                <ul class="space-y-2 text-sm text-blue-700 dark:text-blue-400 mb-4">
+                                    <li class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Si ya tienes cuenta, inicia sesión con <strong>{{ invitacion.email_destino }}</strong></span>
+                                    </li>
+                                    <li class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Si no tienes cuenta, regístrate usando ese correo</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <a href="{% url 'login' %}?next={% url 'aceptar_invitacion' invitacion.token %}" class="flex-1 px-6 py-4 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                        <a href="{% url 'register' %}?next={% url 'aceptar_invitacion' invitacion.token %}&email={{ invitacion.email_destino }}" class="flex-1 px-6 py-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                            <span>Registrarse</span>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer informativo -->
+        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>¿Tienes problemas? <a href="{% url 'core:home' %}" class="text-primary dark:text-primary-neon hover:underline font-semibold">Contacta con soporte</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animación de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.max-w-2xl {
+    animation: fadeInUp 0.6s ease-out;
+}
+</style>
+{% endblock %}
