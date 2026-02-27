@@ -1,0 +1,1547 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Workspace - {{ articulo.titulo|truncatewords:5 }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos para el resaltador de texto */
+    .highlighted {
+        background-color: rgba(250, 204, 21, 0.3);
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .highlighted:hover {
+        background-color: rgba(250, 204, 21, 0.5);
+    }
+    
+    /* Estilos para el visor de PDF/contenido */
+    .article-viewer {
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+    
+    .article-content {
+        line-height: 1.8;
+        user-select: text;
+    }
+    
+    .article-content p {
+        margin-bottom: 1rem;
+    }
+    
+    /* PDF Viewer con PDF.js */
+    #pdf-viewer {
+        width: 100%;
+        height: auto;
+        max-height: 75vh;
+        box-sizing: border-box;
+        border: none;
+        border-radius: 0.75rem;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: block;
+    }
+    
+    .dark #pdf-viewer {
+        background: #1f2937;
+    }
+    
+    .pdf-controls {
+        display: flex;
+        gap: 0;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%) !important;
+        border-radius: 0.75rem;
+        margin-bottom: 16px;
+        flex-wrap: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        border: 1px solid #374151;
+        height: 48px;
+    }
+    
+    .dark .pdf-controls {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        border-color: #374151;
+    }
+    
+    .pdf-controls button {
+        padding: 6px 12px;
+        background: transparent;
+        color: #9ca3af;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        box-shadow: none;
+    }
+    
+    .pdf-controls button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        color: #f3f4f6;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .pdf-controls button:active:not(:disabled) {
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .pdf-controls button:disabled {
+        background: transparent;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.4;
+    }
+    
+    .dark .pdf-controls button:disabled {
+        background: transparent;
+    }
+    
+    .pdf-controls a {
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+    }
+    
+    .pdf-controls a:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+    }
+    
+    .pdf-controls a:active {
+        transform: translateY(0);
+    }
+    
+    .pdf-page-num {
+        font-size: 0.9rem;
+        color: #f3f4f6;
+        font-weight: 500;
+        background: transparent;
+        padding: 0 8px;
+        border-radius: 0;
+        border: none;
+        min-width: auto;
+        text-align: center;
+    }
+    
+    .dark .pdf-page-num {
+        color: #f3f4f6;
+        background: transparent;
+        border-color: transparent;
+    }
+    
+    .pdf-nav-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        flex: 0 1 auto;
+        flex-wrap: nowrap;
+    }
+    
+    .dark .pdf-nav-group {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    
+    .pdf-nav-group button {
+        background: transparent;
+        padding: 6px 10px;
+        font-size: 1rem;
+        border-radius: 0.375rem;
+        box-shadow: none;
+        font-weight: 400;
+        transition: all 0.15s ease;
+        color: #9ca3af;
+    }
+    
+    .pdf-nav-group button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        transform: none;
+        box-shadow: none;
+        color: #f3f4f6;
+    }
+    
+    .pdf-nav-group button:active:not(:disabled) {
+        transform: none;
+    }
+    
+    .pdf-container-wrapper {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 16px;
+    }
+    
+    .dark .pdf-container-wrapper {
+        background: #1f2937;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Estilos para campos */
+    .campo-item {
+        transition: all 0.3s ease;
+    }
+    
+    .campo-item:hover {
+        transform: translateX(4px);
+    }
+    
+    .campo-completado {
+        border-left: 4px solid #10b981;
+    }
+    
+    .campo-aprobado {
+        border-left: 4px solid #3b82f6;
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+    
+    .campo-pendiente {
+        border-left: 4px solid #f59e0b;
+    }
+    
+    /* Badge de estado */
+    .badge-pendiente {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .badge-en-proceso {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    
+    .badge-en-revision {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+    
+    .badge-aprobado {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    /* Animación de guardado */
+    @keyframes saveSuccess {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .save-success {
+        animation: saveSuccess 0.3s ease;
+    }
+    
+    /* Scrollbar personalizado */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-full mx-auto px-4">
+    <!-- Header Superior -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <!-- Breadcrumb -->
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+                    <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+                    <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+                    <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">Artículos</a>
+                    <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <span class="text-gray-700 dark:text-gray-300">Workspace</span>
+                </div>
+                <!-- Título del artículo -->
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ articulo.titulo }}</h1>
+                <div class="flex items-center flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    {% if articulo.metadata_completos.author %}
+                    <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        {{ articulo.metadata_completos.author }}
+                    </span>
+                    {% endif %}
+
+                    {% if articulo.metadata_completos.year %}
+                    <span>•</span>
+                    <span>{{ articulo.metadata_completos.year }}</span>
+                    {% endif %}
+
+                    {% if articulo.metadata_completos.doi %}
+                    <span>•</span>
+                    <a href="https://doi.org/{{ articulo.metadata_completos.doi }}" target="_blank" rel="noopener noreferrer" class="flex items-center hover:text-primary dark:hover:text-primary-neon transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                        <span>DOI: {{ articulo.metadata_completos.doi }}</span>
+                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                    <a href="{% url 'articulos:descargar_pdf_doi' articulo.id %}" 
+                       target="_blank" 
+                       class="ml-2 inline-flex items-center px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        PDF
+                    </a>
+                    {% if articulo.doi %}
+                    <button onclick="guardarPDF({{ articulo.id }})" 
+                            id="btn-guardar-pdf-{{ articulo.id }}"
+                            class="ml-2 inline-flex items-center px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                        </svg>
+                        Guardar PDF
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Badge de Estado y Botones -->
+            <div class="flex items-center space-x-3">
+                <span id="estadoBadge" class="px-4 py-2 rounded-full text-white font-semibold text-sm badge-{{ articulo.estado|lower }}">
+                    {{ articulo.get_estado_display }}
+                </span>
+                
+                {% if articulo.archivo_pdf %}
+                <a href="{% url 'articulos:analizar_articulo' articulo.id %}" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span>Analizar con IA</span>
+                </a>
+                {% endif %}
+                
+                {% if puede_enviar_revision %}
+                <button onclick="enviarARevision()" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Enviar a Revisión</span>
+                </button>
+                {% endif %}
+                
+                {% if puede_aprobar and articulo.estado == 'EN_REVISION' %}
+                <button onclick="aprobarArticulo()" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Aprobar Artículo</span>
+                </button>
+                <button onclick="solicitarCorreccion()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <span>Solicitar Corrección</span>
+                </button>
+                {% endif %}
+                
+                <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Barra de Progreso -->
+        <div class="mt-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Progreso de Completado</span>
+                <span id="progresoTexto" class="text-sm font-bold text-primary dark:text-primary-neon">{{ campos_completados }}/{{ total_campos }} campos ({{ progreso_porcentaje }}%)</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div id="barraProgreso" class="h-full bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary transition-all duration-500" style="width: {{ progreso_porcentaje }}%"></div>
+            </div>
+            
+            {% if campos_aprobados > 0 %}
+            <div class="flex items-center justify-between mb-2 mt-4">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Progreso de Aprobación</span>
+                <span class="text-sm font-bold text-blue-600 dark:text-blue-400">{{ campos_aprobados }}/{{ campos_completados }} aprobados ({{ progreso_aprobacion }}%)</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500" style="width: {{ progreso_aprobacion }}%"></div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Layout Principal: Visor (izq) + Formulario (der) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- COLUMNA IZQUIERDA: Visor del Artículo -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>{% if articulo.archivo_pdf %}PDF del Artículo{% else %}Información del Artículo{% endif %}</span>
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="limpiarResaltados()" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-sm">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Limpiar Resaltados
+                        </button>
+                        {% if articulo.archivo_pdf %}
+                        <a href="{% url 'articulos:descargar_pdf' articulo.id %}" target="_blank" download class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Descargar
+                        </a>
+                        <button onclick="confirmarEliminarPDFWorkspace({{ articulo.id }}, '{{ articulo.titulo|escapejs }}')" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg hover:shadow-lg transition-all text-sm">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Visor de Contenido: PDF si existe, sino Abstract/Contenido -->
+                <div class="article-viewer custom-scrollbar p-8 bg-gray-50 dark:bg-gray-900">
+                    {% if articulo.archivo_pdf %}
+                        <!-- Visor PDF con PDF.js -->
+                        <div class="mb-8">
+                            <!-- Controles del visor PDF - Toolbar estilo Google Docs -->
+                            <div style="display: flex; gap: 0; align-items: center; justify-content: space-between; padding: 10px 16px; background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%); border-radius: 0.75rem; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); border: 1px solid #374151; height: 48px;">
+                                <!-- Grupo de Navegación -->
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button id="pdf-prev" onclick="prevPage()" title="Página anterior" style="padding: 6px 10px; background: transparent; color: #9ca3af; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 1rem; font-weight: 400; transition: all 0.15s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='#f3f4f6';" onmouseout="this.style.background='transparent'; this.style.color='#9ca3af';">← Anterior</button>
+                                    <span style="font-size: 0.9rem; color: #f3f4f6; font-weight: 500; padding: 0 8px;">
+                                        Pág. <span id="page-num">1</span>/<span id="page-count">1</span>
+                                    </span>
+                                    <button id="pdf-next" onclick="nextPage()" title="Página siguiente" style="padding: 6px 10px; background: transparent; color: #9ca3af; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 1rem; font-weight: 400; transition: all 0.15s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.color='#f3f4f6';" onmouseout="this.style.background='transparent'; this.style.color='#9ca3af';">Siguiente →</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Canvas para renderizar el PDF -->
+                            <div style="background: white; border-radius: 0.75rem; padding: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin-bottom: 16px;">
+                                <canvas id="pdf-viewer" style="width: 100%; height: auto; max-height: 75vh; box-sizing: border-box; border: none; border-radius: 0.75rem; background: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: block;"></canvas>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
+                                💡 Usa los botones para navegar y cambiar el tamaño
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Abstract y Contenido extraído (siempre mostrar) -->
+                    <div id="articleContent" class="article-content prose dark:prose-invert max-w-none space-y-6">
+                        {% if articulo.metadata_completos and articulo.metadata_completos.abstract %}
+                        <div class="p-6 bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-lg border-l-4 border-blue-500">
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Abstract</h3>
+                            <p class="text-gray-700 dark:text-gray-300 text-justify leading-relaxed">{{ articulo.metadata_completos.abstract }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if articulo.contenido_extraido %}
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Contenido Extraído</h3>
+                            <div class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {{ articulo.contenido_extraido|safe }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Historial y Comentarios (Tabs) -->
+            <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="border-b border-gray-200 dark:border-gray-700">
+                    <nav class="flex">
+                        <button onclick="cambiarTab('historial')" id="tabHistorial" class="px-6 py-4 text-sm font-semibold border-b-2 border-primary dark:border-primary-neon text-primary dark:text-primary-neon">
+                            Historial ({{ historial.count }})
+                        </button>
+                        <button onclick="cambiarTab('comentarios')" id="tabComentarios" class="px-6 py-4 text-sm font-semibold border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                            Comentarios ({{ comentarios.count }})
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Contenido Historial -->
+                <div id="contenidoHistorial" class="p-6 max-h-96 overflow-y-auto custom-scrollbar">
+                    {% if historial %}
+                        <div class="space-y-4">
+                            {% for entrada in historial %}
+                            <div class="flex items-start space-x-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-primary dark:bg-primary-neon bg-opacity-10 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ entrada.usuario.get_full_name|default:entrada.usuario.username }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ entrada.valor_nuevo }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ entrada.fecha_cambio|date:"d/m/Y H:i" }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-gray-500 dark:text-gray-400 py-8">No hay historial registrado</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Contenido Comentarios -->
+                <div id="contenidoComentarios" class="p-6 max-h-96 overflow-y-auto custom-scrollbar hidden">
+                    {% if comentarios %}
+                        <div class="space-y-4">
+                            {% for comentario in comentarios %}
+                            <div class="p-4 border-l-4 {% if comentario.tipo_accion == 'APROBADO' %}border-green-500 bg-green-50 dark:bg-green-900 dark:bg-opacity-20{% elif comentario.tipo_accion == 'CORRECCION' %}border-orange-500 bg-orange-50 dark:bg-orange-900 dark:bg-opacity-20{% else %}border-gray-300 bg-gray-50 dark:bg-gray-700{% endif %} rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ comentario.supervisor.get_full_name|default:comentario.supervisor.username }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ comentario.fecha_comentario|date:"d/m/Y H:i" }}</span>
+                                </div>
+                                <p class="text-sm text-gray-700 dark:text-gray-300">{{ comentario.comentario }}</p>
+                                {% if comentario.tipo_accion %}
+                                <span class="inline-block mt-2 px-2 py-1 text-xs rounded {% if comentario.tipo_accion == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200{% elif comentario.tipo_accion == 'CORRECCION' %}bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-200{% endif %}">
+                                    {{ comentario.get_tipo_accion_display }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-gray-500 dark:text-gray-400 py-8">No hay comentarios</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Formulario de Campos -->
+        <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 sticky top-6">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-start justify-between mb-3">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center space-x-2">
+                            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <span>Campos a Completar</span>
+                        </h2>
+                        <button id="btnCargarSugerencias" onclick="cargarSugerenciasAnalisis({{ articulo.id }})" 
+                                class="px-3 py-2 text-xs bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold whitespace-nowrap flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <span>Sugerencias IA</span>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Completa los datos solicitados</p>
+                </div>
+                
+                <!-- Lista de Campos -->
+                <div class="p-6 space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
+                    {% if campos_asignados %}
+                        {% regroup campos_asignados by campo.get_categoria_display as categorias %}
+                        {% for categoria in categorias %}
+                            <div class="mb-6">
+                                <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                                    {{ categoria.grouper }}
+                                </h3>
+                                
+                                {% for asignacion in categoria.list %}
+                                <div class="campo-item mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg {% if asignacion.aprobado %}campo-aprobado{% elif asignacion.completado %}campo-completado{% else %}campo-pendiente{% endif %}" 
+                                     data-campo-id="{{ asignacion.campo.id }}"
+                                     data-asignacion-id="{{ asignacion.id }}">
+                                    
+                                    <!-- Header del Campo -->
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div class="flex-1">
+                                            <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                                                {{ asignacion.campo.nombre }}
+                                                {% if asignacion.campo.descripcion %}
+                                                <svg class="w-4 h-4 inline text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="{{ asignacion.campo.descripcion }}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                {% endif %}
+                                            </label>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ asignacion.campo.get_tipo_dato_display }}</p>
+                                        </div>
+                                        
+                                        <!-- Badges de Estado -->
+                                        <div class="flex items-center space-x-2">
+                                            {% if asignacion.aprobado %}
+                                            <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 dark:bg-opacity-30 text-blue-800 dark:text-blue-300 rounded flex items-center">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Aprobado
+                                            </span>
+                                            {% elif asignacion.completado %}
+                                            <span class="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 dark:bg-opacity-30 text-green-800 dark:text-green-300 rounded">
+                                                Completado
+                                            </span>
+                                            {% else %}
+                                            <span class="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 text-orange-800 dark:text-orange-300 rounded">
+                                                Pendiente
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Input del Campo -->
+                                    <div class="mb-3">
+                                        {% if asignacion.campo.tipo_dato == 'TEXTO' %}
+                                        <input type="text" 
+                                               class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                               data-campo-codigo="{{ asignacion.campo.codigo }}"
+                                               value="{{ asignacion.valor|default:'' }}"
+                                               {% if asignacion.aprobado %}readonly{% endif %}
+                                               placeholder="Ingresa el texto...">
+                                        
+                                        {% elif asignacion.campo.tipo_dato == 'TEXTO' %}
+                                        <textarea 
+                                               class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                               data-campo-codigo="{{ asignacion.campo.codigo }}"
+                                               rows="3"
+                                               {% if asignacion.aprobado %}readonly{% endif %}
+                                               placeholder="Ingresa el texto...">{{ asignacion.valor|default:'' }}</textarea>
+                                        
+                                        {% elif asignacion.campo.tipo_dato == 'NUMERO' %}
+                                        <input type="number" 
+                                               class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                               data-campo-codigo="{{ asignacion.campo.codigo }}"
+                                               value="{{ asignacion.valor|default:'' }}"
+                                               {% if asignacion.aprobado %}readonly{% endif %}
+                                               step="any"
+                                               placeholder="Ingresa un número...">
+                                        
+                                        {% elif asignacion.campo.tipo_dato == 'FECHA' %}
+                                        <input type="date" 
+                                               class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                               value="{{ asignacion.valor|default:'' }}"
+                                               {% if asignacion.aprobado %}readonly{% endif %}>
+                                        
+                                        {% elif asignacion.campo.tipo_dato == 'SI_NO' %}
+                                        <select class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                                data-campo-codigo="{{ asignacion.campo.codigo }}"
+                                                {% if asignacion.aprobado %}disabled{% endif %}>
+                                            <option value="">Selecciona...</option>
+                                            <option value="Sí" {% if asignacion.valor == 'Sí' %}selected{% endif %}>Sí</option>
+                                            <option value="No" {% if asignacion.valor == 'No' %}selected{% endif %}>No</option>
+                                        </select>
+                                        
+                                        {% elif asignacion.campo.tipo_dato == 'OPCIONES' %}
+                                        <select class="campo-input w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm {% if asignacion.aprobado %}bg-gray-100 dark:bg-gray-600{% endif %}"
+                                                data-campo-codigo="{{ asignacion.campo.codigo }}"
+                                                {% if asignacion.aprobado %}disabled{% endif %}>
+                                            <option value="">Selecciona...</option>
+                                            {% if asignacion.campo.opciones_validas and asignacion.campo.opciones_validas|length > 0 %}
+                                                {% for opcion in asignacion.campo.opciones_validas %}
+                                                <option value="{{ opcion }}" {% if asignacion.valor == opcion %}selected{% endif %}>{{ opcion }}</option>
+                                                {% endfor %}
+                                            {% else %}
+                                                <option value="" disabled>No hay opciones definidas</option>
+                                            {% endif %}
+                                        </select>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Notas del campo -->
+                                    {% if asignacion.notas %}
+                                    <div class="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 rounded-lg border-l-4 border-yellow-400">
+                                        <p class="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-1">Notas del supervisor:</p>
+                                        <p class="text-xs text-yellow-700 dark:text-yellow-400 whitespace-pre-line">{{ asignacion.notas }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Botones de Acción -->
+                                    <div class="flex items-center justify-between">
+                                        {% if asignacion.aprobado %}
+                                        <span class="text-xs text-blue-600 dark:text-blue-400 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Campo bloqueado (Aprobado)
+                                        </span>
+                                        {% else %}
+                                        <button type="button" 
+                                                onclick="guardarCampo({{ asignacion.campo.id }}, {{ asignacion.id }})"
+                                                class="btn-guardar px-3 py-2 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-lg hover:shadow-lg transition-all duration-200 text-xs font-semibold flex items-center space-x-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <span>Guardar</span>
+                                        </button>
+                                        {% endif %}
+                                        
+                                        {% if puede_aprobar and asignacion.completado %}
+                                        <div class="flex items-center space-x-2">
+                                            {% if not asignacion.aprobado %}
+                                            <button type="button" 
+                                                    onclick="aprobarCampo({{ asignacion.id }})"
+                                                    class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all text-xs font-semibold flex items-center space-x-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>Aprobar</span>
+                                            </button>
+                                            {% endif %}
+                                            <button type="button" 
+                                                    onclick="solicitarCorreccionCampo({{ asignacion.id }}, '{{ asignacion.campo.nombre|escapejs }}')"
+                                                    class="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all text-xs font-semibold flex items-center space-x-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                </svg>
+                                                <span>Corrección</span>
+                                            </button>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                            </svg>
+                            <p class="text-lg mb-2">No hay campos asignados</p>
+                            <p class="text-sm">Contacta con el supervisor del proyecto</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+const csrftoken = getCookie('csrftoken');
+const articuloId = {{ articulo.id }};
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ==================== RESALTADOR DE TEXTO ====================
+let isSelecting = false;
+
+document.getElementById('articleContent')?.addEventListener('mouseup', function() {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText.length > 0) {
+        resaltarTexto();
+    }
+});
+
+function resaltarTexto() {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const span = document.createElement('span');
+        span.className = 'highlighted';
+        span.onclick = function() {
+            // Opción: copiar al portapapeles
+            navigator.clipboard.writeText(this.textContent);
+            mostrarToast('Texto copiado al portapapeles', 'success');
+        };
+        
+        try {
+            range.surroundContents(span);
+        } catch (e) {
+            // Si falla, intentar método alternativo
+            const contents = range.extractContents();
+            span.appendChild(contents);
+            range.insertNode(span);
+        }
+        
+        selection.removeAllRanges();
+    }
+}
+
+function limpiarResaltados() {
+    const highlighted = document.querySelectorAll('.highlighted');
+    highlighted.forEach(span => {
+        const parent = span.parentNode;
+        while (span.firstChild) {
+            parent.insertBefore(span.firstChild, span);
+        }
+        parent.removeChild(span);
+    });
+    mostrarToast('Resaltados eliminados', 'info');
+}
+
+// ==================== GUARDAR CAMPO ====================
+function guardarCampo(campoId, asignacionId) {
+    const campoItem = document.querySelector(`[data-asignacion-id="${asignacionId}"]`);
+    const input = campoItem.querySelector('.campo-input');
+    const valor = input.value.trim();
+    
+    const btnGuardar = campoItem.querySelector('.btn-guardar');
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Guardando...</span>';
+    
+    fetch(`/articulos/workspace/${articuloId}/guardar-campo/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            campo_id: campoId,
+            valor: valor
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarToast(data.mensaje, 'success');
+            
+            // Actualizar UI
+            campoItem.classList.remove('campo-pendiente');
+            campoItem.classList.add('campo-completado');
+            
+            // Actualizar progreso
+            document.getElementById('progresoTexto').textContent = 
+                `${data.campos_completados}/${data.total_campos} campos (${data.progreso_porcentaje}%)`;
+            document.getElementById('barraProgreso').style.width = `${data.progreso_porcentaje}%`;
+            
+            // Actualizar estado si cambió
+            if (data.estado_cambiado) {
+                document.getElementById('estadoBadge').textContent = data.nuevo_estado;
+                document.getElementById('estadoBadge').className = 
+                    `px-4 py-2 rounded-full text-white font-semibold text-sm badge-${data.nuevo_estado.toLowerCase().replace(' ', '-')}`;
+            }
+            
+            // Animación de éxito
+            campoItem.classList.add('save-success');
+            setTimeout(() => campoItem.classList.remove('save-success'), 300);
+            
+        } else {
+            mostrarToast(data.error || 'Error al guardar', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarToast('Error de conexión', 'error');
+    })
+    .finally(() => {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Guardar</span>';
+    });
+}
+
+// ==================== APROBAR CAMPO ====================
+function aprobarCampo(asignacionId) {
+    Swal.fire({
+        title: '¿Aprobar campo?',
+        text: 'Una vez aprobado, el campo no podrá ser modificado',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/articulos/campo/${asignacionId}/aprobar/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarToast(data.mensaje, 'success');
+                    
+                    if (data.articulo_aprobado_completo) {
+                        Swal.fire({
+                            title: '¡Artículo Aprobado!',
+                            text: 'Todos los campos han sido aprobados. El artículo está completo.',
+                            icon: 'success',
+                            confirmButtonText: 'Ver Bandeja'
+                        }).then(() => {
+                            window.location.href = `/articulos/proyecto/{{ proyecto.id }}/bandeja-revision/`;
+                        });
+                    } else {
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } else {
+                    mostrarToast(data.error || 'Error al aprobar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error de conexión', 'error');
+            });
+        }
+    });
+}
+
+// ==================== SOLICITAR CORRECCIÓN DE CAMPO ====================
+function solicitarCorreccionCampo(asignacionId, nombreCampo) {
+    Swal.fire({
+        title: `Solicitar corrección`,
+        html: `<p class="mb-4">Campo: <strong>${nombreCampo}</strong></p>`,
+        input: 'textarea',
+        inputLabel: 'Comentario de corrección',
+        inputPlaceholder: 'Describe qué debe corregirse...',
+        inputAttributes: {
+            'aria-label': 'Comentario de corrección',
+            'rows': 4
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Solicitar Corrección',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debes escribir un comentario';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/articulos/campo/${asignacionId}/solicitar-correccion/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    comentario: result.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarToast('Corrección solicitada exitosamente', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    mostrarToast(data.error || 'Error al solicitar corrección', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error de conexión', 'error');
+            });
+        }
+    });
+}
+
+// ==================== ENVIAR A REVISIÓN ====================
+function enviarARevision() {
+    Swal.fire({
+        title: '¿Enviar a revisión?',
+        text: 'El artículo será enviado al supervisor para su revisión',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#8b5cf6',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Enviar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/articulos/articulo/${articuloId}/enviar-revision/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Enviado!',
+                        text: data.mensaje,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    mostrarToast(data.error || 'Error al enviar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error de conexión', 'error');
+            });
+        }
+    });
+}
+
+// ==================== APROBAR ARTÍCULO ====================
+function aprobarArticulo() {
+    Swal.fire({
+        title: 'Aprobar artículo completo',
+        html: `
+            <p class="mb-4">¿Deseas aprobar este artículo?</p>
+            <p class="text-sm text-gray-600 mb-4">Todos los campos completados serán aprobados automáticamente</p>
+            <textarea id="comentarioAprobacion" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder="Comentario opcional..."></textarea>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Aprobar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            return document.getElementById('comentarioAprobacion').value;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/articulos/articulo/${articuloId}/aprobar/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    comentario: result.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Aprobado!',
+                        html: `<p>${data.mensaje}</p><p class="text-sm text-gray-600 mt-2">${data.campos_aprobados} campos aprobados</p>`,
+                        icon: 'success',
+                        confirmButtonText: 'Ir a Bandeja'
+                    }).then(() => {
+                        window.location.href = data.redirect_url;
+                    });
+                } else {
+                    mostrarToast(data.error || 'Error al aprobar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error de conexión', 'error');
+            });
+        }
+    });
+}
+
+// ==================== SOLICITAR CORRECCIÓN ====================
+function solicitarCorreccion() {
+    Swal.fire({
+        title: 'Solicitar corrección al artículo',
+        input: 'textarea',
+        inputLabel: 'Describe las correcciones necesarias',
+        inputPlaceholder: 'Indica qué debe corregirse...',
+        inputAttributes: {
+            'rows': 5
+        },
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Solicitar Corrección',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debes escribir un comentario';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/articulos/articulo/${articuloId}/solicitar-correccion/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    comentario: result.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Corrección solicitada',
+                        text: data.mensaje,
+                        icon: 'success',
+                        confirmButtonText: 'Ir a Bandeja'
+                    }).then(() => {
+                        window.location.href = data.redirect_url;
+                    });
+                } else {
+                    mostrarToast(data.error || 'Error al solicitar corrección', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarToast('Error de conexión', 'error');
+            });
+        }
+    });
+}
+
+// ==================== CAMBIAR TAB ====================
+function cambiarTab(tab) {
+    const tabHistorial = document.getElementById('tabHistorial');
+    const tabComentarios = document.getElementById('tabComentarios');
+    const contenidoHistorial = document.getElementById('contenidoHistorial');
+    const contenidoComentarios = document.getElementById('contenidoComentarios');
+    
+    if (tab === 'historial') {
+        tabHistorial.classList.add('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+        tabHistorial.classList.remove('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+        tabComentarios.classList.remove('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+        tabComentarios.classList.add('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+        contenidoHistorial.classList.remove('hidden');
+        contenidoComentarios.classList.add('hidden');
+    } else {
+        tabComentarios.classList.add('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+        tabComentarios.classList.remove('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+        tabHistorial.classList.remove('border-primary', 'dark:border-primary-neon', 'text-primary', 'dark:text-primary-neon');
+        tabHistorial.classList.add('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+        contenidoComentarios.classList.remove('hidden');
+        contenidoHistorial.classList.add('hidden');
+    }
+}
+
+// ==================== TOAST NOTIFICATIONS ====================
+function mostrarToast(mensaje, tipo = 'info') {
+    const bgColors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-orange-500',
+        info: 'bg-blue-500'
+    };
+    
+    const toast = document.createElement('div');
+    toast.className = `fixed bottom-6 right-6 ${bgColors[tipo]} text-white px-6 py-4 rounded-lg shadow-2xl z-50 animate-fade-in-up flex items-center space-x-3`;
+    toast.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        <span>${mensaje}</span>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Auto-guardado cada 30 segundos (opcional)
+let autoSaveInterval;
+function iniciarAutoGuardado() {
+    autoSaveInterval = setInterval(() => {
+        // Guardar automáticamente campos modificados
+        const camposModificados = document.querySelectorAll('.campo-input[data-modificado="true"]');
+        camposModificados.forEach(input => {
+            const campoItem = input.closest('[data-asignacion-id]');
+            const campoId = campoItem.dataset.campoId;
+            const asignacionId = campoItem.dataset.asignacionId;
+            guardarCampo(parseInt(campoId), parseInt(asignacionId));
+            input.dataset.modificado = "false";
+        });
+    }, 30000); // 30 segundos
+}
+
+// Marcar campos como modificados
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.campo-input').forEach(input => {
+        input.addEventListener('input', function() {
+            this.dataset.modificado = "true";
+        });
+    });
+    
+    // Iniciar auto-guardado si el usuario lo desea
+    // iniciarAutoGuardado(); // Descomentar para activar
+});
+
+// Prevenir pérdida de datos
+window.addEventListener('beforeunload', function(e) {
+    const camposModificados = document.querySelectorAll('.campo-input[data-modificado="true"]');
+    if (camposModificados.length > 0) {
+        e.preventDefault();
+        e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de salir?';
+        return e.returnValue;
+    }
+});
+
+// Atajos de teclado
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S o Cmd+S para guardar
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const campoActivo = document.activeElement;
+        if (campoActivo.classList.contains('campo-input')) {
+            const campoItem = campoActivo.closest('[data-asignacion-id]');
+            const campoId = campoItem.dataset.campoId;
+            const asignacionId = campoItem.dataset.asignacionId;
+            guardarCampo(parseInt(campoId), parseInt(asignacionId));
+        }
+    }
+});
+
+// Función para guardar PDF automáticamente
+async function guardarPDF(articuloId) {
+    const btn = document.getElementById(`btn-guardar-pdf-${articuloId}`);
+    const originalText = btn.innerHTML;
+    
+    // Cambiar botón a estado de carga
+    btn.innerHTML = `
+        <svg class="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Guardando...
+    `;
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/articulos/guardar-pdf/${articuloId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            // Éxito: cambiar botón y recargar página para mostrar el PDF guardado
+            btn.innerHTML = `
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                ¡Guardado!
+            `;
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+            
+            // Mostrar mensaje de éxito
+            mostrarMensaje('PDF guardado correctamente', 'success');
+            
+            // Recargar la página después de 2 segundos para mostrar los cambios
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            
+        } else {
+            // Error: restaurar botón y mostrar error
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            mostrarMensaje(data.error || 'Error al guardar el PDF', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        mostrarMensaje('Error de conexión al guardar el PDF', 'error');
+    }
+}
+
+// Función para mostrar mensajes (reutilizando la existente si existe)
+function mostrarMensaje(mensaje, tipo = 'info') {
+    // Crear elemento de mensaje si no existe
+    let mensajeDiv = document.getElementById('mensaje-temporal');
+    if (!mensajeDiv) {
+        mensajeDiv = document.createElement('div');
+        mensajeDiv.id = 'mensaje-temporal';
+        mensajeDiv.className = 'fixed top-4 right-4 z-50 px-4 py-2 rounded-lg font-medium shadow-lg transition-all duration-300';
+        document.body.appendChild(mensajeDiv);
+    }
+    
+    // Configurar colores según tipo
+    const colores = {
+        success: 'bg-green-500 text-white',
+        error: 'bg-red-500 text-white',
+        warning: 'bg-yellow-500 text-black',
+        info: 'bg-blue-500 text-white'
+    };
+    
+    mensajeDiv.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg font-medium shadow-lg transition-all duration-300 ${colores[tipo] || colores.info}`;
+    mensajeDiv.textContent = mensaje;
+    mensajeDiv.style.display = 'block';
+    
+    // Ocultar después de 5 segundos
+    setTimeout(() => {
+        mensajeDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Función para confirmar eliminación de PDF en el workspace
+function confirmarEliminarPDFWorkspace(articuloId, titulo) {
+    // Usar SweetAlert si está disponible, si no usar confirm
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '¿Eliminar PDF?',
+            html: `<p>¿Estás seguro de que deseas eliminar el PDF del artículo:</p><p class="font-semibold text-primary mt-2">"${titulo}"</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                eliminarPDFWorkspace(articuloId);
+            }
+        });
+    } else {
+        if (confirm(`¿Estás seguro de que deseas eliminar el PDF de "${titulo}"?`)) {
+            eliminarPDFWorkspace(articuloId);
+        }
+    }
+}
+
+// Función para eliminar PDF en el workspace
+function eliminarPDFWorkspace(articuloId) {
+    fetch(`/articulos/eliminar-pdf/${articuloId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarMensaje('PDF eliminado correctamente. Recargando...', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            mostrarMensaje(data.error || 'Error al eliminar el PDF', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarMensaje('Error de conexión', 'error');
+    });
+}
+</script>
+
+<!-- PDF.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+    // Configuración de PDF.js
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    let pdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    let zoomLevel = 1.5; // Escala de renderización para PDF.js (1.5 = resolución normal)
+    
+    const canvas = document.getElementById('pdf-viewer');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    
+    // Solo cargar PDF si existe el canvas (si hay PDF en el artículo)
+    if (canvas) {
+        // Obtener la URL del PDF desde el atributo del canvas
+        const pdfUrl = "{% url 'articulos:visualizar_pdf' articulo.id %}";
+        
+        // Cargar el PDF
+        pdfjsLib.getDocument(pdfUrl).promise.then(doc => {
+            pdfDoc = doc;
+            document.getElementById('page-count').textContent = doc.numPages;
+            renderPage(pageNum);
+        }).catch(err => {
+            console.error('Error al cargar PDF:', err);
+            // Mostrar opción de descargar
+            canvas.style.display = 'none';
+            const fallback = document.createElement('div');
+            fallback.innerHTML = `
+                <div style="padding: 40px; text-align: center; background: #f3f4f6; border-radius: 0.5rem;">
+                    <p style="color: #6b7280; margin-bottom: 20px;">No se puede renderizar el PDF en el navegador</p>
+                    <a href="{% url 'articulos:descargar_pdf' articulo.id %}" target="_blank" 
+                       style="display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 0.375rem;">
+                        📥 Descargar PDF
+                    </a>
+                </div>
+            `;
+            canvas.parentNode.insertBefore(fallback, canvas);
+        });
+    }
+    
+    function renderPage(num) {
+        if (!pdfDoc) return;
+        
+        if (pageRendering) {
+            pageNumPending = num;
+            return;
+        }
+        pageRendering = true;
+        
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({scale: zoomLevel});
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            
+            page.render(renderContext).promise.then(() => {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+        
+        document.getElementById('page-num').textContent = num;
+        
+        // Actualizar estado de botones
+        document.getElementById('pdf-prev').disabled = num <= 1;
+        document.getElementById('pdf-next').disabled = num >= pdfDoc.numPages;
+    }
+    
+    function nextPage() {
+        if (pageNum < pdfDoc.numPages) {
+            pageNum++;
+            renderPage(pageNum);
+        }
+    }
+    
+    function prevPage() {
+        if (pageNum > 1) {
+            pageNum--;
+            renderPage(pageNum);
+        }
+    }
+
+// ==================== CARGAR SUGERENCIAS DEL ANÁLISIS IA ====================
+async function cargarSugerenciasAnalisis(articuloId) {
+    const btnCargarSugerencias = document.getElementById('btnCargarSugerencias');
+    const textoOriginal = btnCargarSugerencias.innerHTML;
+    
+    // Mostrar estado de carga
+    btnCargarSugerencias.disabled = true;
+    btnCargarSugerencias.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Cargando...</span>
+    `;
+    
+    try {
+        const response = await fetch(`/articulos/articulo/${articuloId}/sugerencias-analisis/`);
+        const data = await response.json();
+        
+        if (data.success && data.sugerencias && Object.keys(data.sugerencias).length > 0) {
+            // Llenar los campos con las sugerencias
+            let camposPoblados = 0;
+            
+            for (const [codigo, sugerencia] of Object.entries(data.sugerencias)) {
+                // Encontrar el campo por código - el atributo está directamente en el input
+                const input = document.querySelector(`[data-campo-codigo="${codigo}"]`);
+                
+                if (input) {
+                    // Rellenar el valor (sin guardar)
+                    input.value = sugerencia.valor;
+                    // Añadir atributo para marcar como sugerencia
+                    input.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                    input.title = `Sugerencia IA: ${sugerencia.contexto}\n\nConfianza: ${sugerencia.confianza}\n\nCita: ${sugerencia.cita}`;
+                    
+                    camposPoblados++;
+                }
+            }
+            
+            if (camposPoblados > 0) {
+                mostrarToast(`✨ ${camposPoblados} campo(s) autocompleto(s) con sugerencias de IA. Revisa y guarda manualmente.`, 'success');
+            } else {
+                mostrarToast('No se pudieron asignar las sugerencias a los campos', 'warning');
+            }
+        } else if (!data.success && data.error) {
+            mostrarToast(data.error, 'warning');
+        } else {
+            mostrarToast('No hay análisis completado aún. Ejecuta el análisis IA primero.', 'info');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarToast('Error al cargar sugerencias: ' + error.message, 'error');
+    } finally {
+        btnCargarSugerencias.disabled = false;
+        btnCargarSugerencias.innerHTML = textoOriginal;
+    }
+}
+
+</script>
+
+{% endblock %}

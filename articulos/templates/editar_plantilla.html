@@ -1,0 +1,939 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Plantilla - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6" aria-label="Breadcrumb">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Editar Plantilla</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3 mb-2">
+                        <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                        </svg>
+                        <span>Editar Plantilla del Proyecto</span>
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Agrega o quita campos de la plantilla. Los cambios se aplicarán a <strong>{{ total_articulos }} artículo(s)</strong>.
+                    </p>
+                </div>
+                <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+                    <button onclick="document.getElementById('crear-campo-form').classList.toggle('hidden')"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Nueva Variable</span>
+                    </button>
+                    <a href="{% url 'detalle_proyecto' proyecto.id %}" 
+                        class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span>Volver</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario para Crear Nueva Variable -->
+    <div id="crear-campo-form" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-green-500 to-green-700 px-6 py-4">
+            <h2 class="text-xl font-bold text-white flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Crear Nueva Variable
+            </h2>
+            <p class="text-green-100 text-sm mt-1">Crea una variable global o personalizada para el proyecto</p>
+        </div>
+        <div class="p-6">
+            <form method="POST" id="form-crear-campo">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="crear_campo">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre *</label>
+                        <input type="text" name="nombre" id="nombre" required
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label for="codigo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Código Único *</label>
+                        <input type="text" name="codigo" id="codigo" required
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label for="categoria" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Categoría *</label>
+                        <select name="categoria" id="categoria" required
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500">
+                            {% for key, value in categorias %}
+                            <option value="{{ key }}">{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tipo_dato" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Dato *</label>
+                        <select name="tipo_dato" id="tipo_dato" required
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+                            onchange="toggleOpcionesValidas(this.value)">
+                            {% for key, value in tipos_dato %}
+                            <option value="{{ key }}">{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label for="descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" rows="3"
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+                    <div class="sm:col-span-2 hidden" id="opciones-validas-container">
+                        <label for="opciones_validas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Opciones Válidas (separadas por comas)</label>
+                        <input type="text" name="opciones_validas" id="opciones_validas"
+                            class="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+                            placeholder="Opción 1, Opción 2, Opción 3">
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="es_global" id="es_global"
+                            class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                        <label for="es_global" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Variable Global</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="agregar_a_plantilla" id="agregar_a_plantilla" checked
+                            class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                        <label for="agregar_a_plantilla" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Agregar a la Plantilla</label>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="document.getElementById('crear-campo-form').classList.add('hidden')"
+                        class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Crear Variable</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 dark:bg-opacity-20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-purple-700 dark:text-purple-300 font-medium">Campos en Plantilla</span>
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{{ plantilla.campos.count }}</p>
+        </div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 dark:bg-opacity-20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Globales Disponibles</span>
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ total_globales }}</p>
+        </div>
+        <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-green-700 dark:text-green-300 font-medium">Personalizadas</span>
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ total_personalizadas }}</p>
+        </div>
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 dark:bg-opacity-20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-orange-700 dark:text-orange-300 font-medium">Artículos Afectados</span>
+                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">{{ total_articulos }}</p>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+        <!-- IZQUIERDA: Campos Actuales en la Plantilla -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-700 px-6 py-4">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Campos en la Plantilla ({{ plantilla.campos.count }})
+                </h2>
+                <p class="text-purple-100 text-sm mt-1">Estos campos están asignados a todos los artículos</p>
+            </div>
+            <div class="p-6">
+                {% if campos_por_categoria %}
+                    <div class="space-y-4 max-h-[700px] overflow-y-auto">
+                        {% for categoria, items in campos_por_categoria.items %}
+                        <div class="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
+                            <h3 class="font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+                                <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+                                {{ categoria }}
+                            </h3>
+                            <div class="space-y-3">
+                                {% for item in items %}
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 transition-all">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ item.campo.nombre }}</h4>
+                                                {% if item.campo.proyecto %}
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Personal</span>
+                                                {% else %}
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">Global</span>
+                                                {% endif %}
+                                                {% if item.tiene_aprobados %}
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 flex items-center space-x-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                    </svg>
+                                                    <span>Protegido</span>
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                {{ item.campo.descripcion|default:"Sin descripción"|truncatewords:20 }}
+                                            </p>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
+                                                    {{ item.campo.get_tipo_dato_display }}
+                                                </span>
+                                                <code class="text-xs text-gray-500 dark:text-gray-400">{{ item.campo.codigo }}</code>
+                                            </div>
+                                        </div>
+                                        {% if not item.tiene_aprobados %}
+                                        <form method="POST" class="ml-3" onsubmit="return confirm('¿Quitar el campo \"{{ item.campo.nombre }}\" de la plantilla?\n\nSe eliminará de todos los artículos que no lo tengan completado.');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="accion" value="quitar_campo">
+                                            <input type="hidden" name="campo_id" value="{{ item.campo.id }}">
+                                            <button type="submit" 
+                                                class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:bg-opacity-20 rounded-lg transition-all"
+                                                aria-label="Quitar campo {{ item.campo.nombre }}">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p class="mb-2">No hay campos en la plantilla</p>
+                        <p class="text-sm">Agrega campos desde la columna derecha</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- DERECHA: Agregar Campos -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-700 px-6 py-4">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Agregar Campos a la Plantilla
+                </h2>
+                <p class="text-blue-100 text-sm mt-1">Selecciona campos para agregar al proyecto</p>
+            </div>
+            <div class="p-6">
+                <!-- BUSCADOR -->
+                <div class="mb-4">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="buscar-campo"
+                            placeholder="Buscar campos por nombre o código..."
+                            class="w-full px-4 py-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all"
+                            onkeyup="filtrarCampos()"
+                            aria-label="Buscar campos"
+                        >
+                        <svg class="w-5 h-5 absolute left-3 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- FILTRO POR CATEGORÍA -->
+                <div class="mb-4">
+                    <select 
+                        id="filtro-categoria" 
+                        onchange="filtrarCampos()"
+                        class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all"
+                        aria-label="Filtrar por categoría"
+                    >
+                        <option value="">Todas las Categorías</option>
+                        {% for key, value in categorias %}
+                        <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- FILTRO POR TIPO -->
+                <div class="mb-4 flex space-x-2">
+                    <button type="button" onclick="filtrarPorTipo('todos')" 
+                        class="filtro-tipo-btn flex-1 px-3 py-2 text-sm rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium transition-all active"
+                        data-tipo="todos"
+                        aria-label="Mostrar todos los campos">
+                        Todos
+                    </button>
+                    <button type="button" onclick="filtrarPorTipo('globales')" 
+                        class="filtro-tipo-btn flex-1 px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                        data-tipo="globales"
+                        aria-label="Mostrar campos globales">
+                        Globales
+                    </button>
+                    <button type="button" onclick="filtrarPorTipo('personalizadas')" 
+                        class="filtro-tipo-btn flex-1 px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                        data-tipo="personalizadas"
+                        aria-label="Mostrar campos personalizados">
+                        Personalizadas
+                    </button>
+                </div>
+
+                <!-- INFO: Resultados -->
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <span id="total-campos-mostrados">0</span> campo(s) disponible(s)
+                    </div>
+                    <button type="button" onclick="seleccionarTodosDisponibles()" 
+                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center space-x-1"
+                        aria-label="Seleccionar todos los campos visibles">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Seleccionar todos visibles</span>
+                    </button>
+                </div>
+
+                <!-- FORMULARIO DE SELECCIÓN -->
+                <form method="POST" id="form-agregar-campos">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="agregar_campos">
+                    <div class="space-y-3 max-h-[500px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4" id="lista-campos">
+                        <!-- Campos Globales Agrupados -->
+                        {% for categoria, items in variables_globales_agrupadas.items %}
+                            {% for item in items %}
+                                {% if not item.en_plantilla %}
+                                <label class="campo-item flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer transition-all hover:shadow-md group"
+                                    data-nombre="{{ item.campo.nombre|lower }}"
+                                    data-codigo="{{ item.campo.codigo|lower }}"
+                                    data-categoria="{{ item.campo.categoria }}"
+                                    data-tipo="global">
+                                    <input 
+                                        type="checkbox" 
+                                        name="campos_agregar" 
+                                        value="{{ item.campo.id }}"
+                                        class="campo-checkbox mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-all"
+                                        aria-label="Seleccionar campo {{ item.campo.nombre }}"
+                                    >
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <div class="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                {{ item.campo.nombre }}
+                                            </div>
+                                            <span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">Global</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                            {{ item.campo.descripcion|default:"Sin descripción"|truncatewords:15 }}
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
+                                                {{ item.campo.get_tipo_dato_display }}
+                                            </span>
+                                            <span class="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded">
+                                                {{ item.campo.get_categoria_display }}
+                                            </span>
+                                            <code class="text-xs text-gray-400">{{ item.campo.codigo }}</code>
+                                        </div>
+                                    </div>
+                                </label>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+
+                        <!-- Campos Personalizados Agrupados -->
+                        {% for categoria, items in variables_personalizadas_agrupadas.items %}
+                            {% for item in items %}
+                                {% if not item.en_plantilla %}
+                                <label class="campo-item flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 cursor-pointer transition-all hover:shadow-md group"
+                                    data-nombre="{{ item.campo.nombre|lower }}"
+                                    data-codigo="{{ item.campo.codigo|lower }}"
+                                    data-categoria="{{ item.campo.categoria }}"
+                                    data-tipo="personalizada">
+                                    <input 
+                                        type="checkbox" 
+                                        name="campos_agregar" 
+                                        value="{{ item.campo.id }}"
+                                        class="campo-checkbox mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 transition-all"
+                                        aria-label="Seleccionar campo {{ item.campo.nombre }}"
+                                    >
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <div class="font-medium text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                                {{ item.campo.nombre }}
+                                            </div>
+                                            <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Personal</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                            {{ item.campo.descripcion|default:"Sin descripción"|truncatewords:15 }}
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-2 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
+                                                {{ item.campo.get_tipo_dato_display }}
+                                            </span>
+                                            <span class="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded">
+                                                {{ item.campo.get_categoria_display }}
+                                            </span>
+                                            <code class="text-xs text-gray-400">{{ item.campo.codigo }}</code>
+                                        </div>
+                                    </div>
+                                </label>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+
+                        <!-- Sin resultados -->
+                        <div id="sin-resultados" class="hidden text-center py-12 text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            <p>No se encontraron campos</p>
+                        </div>
+                    </div>
+
+                    <!-- Botón Agregar -->
+                    <div class="mt-6">
+                        <button type="submit" 
+                            class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                            aria-label="Agregar campos seleccionados">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Agregar Campos Seleccionados</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mt-6 bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+        <div class="flex">
+            <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <div class="text-sm text-yellow-800 dark:text-yellow-300">
+                <p class="font-semibold mb-1">Importante</p>
+                <ul class="list-disc list-inside space-y-1 ml-2 text-xs">
+                    <li>Los campos agregados se asignarán a <strong>todos los {{ total_articulos }} artículos</strong> del proyecto</li>
+                    <li>Los artículos <strong>EN_ESPERA</strong> pasarán a <strong>PENDIENTE</strong></li>
+                    <li>Los artículos <strong>APROBADOS</strong> se reactivarán si agregas nuevos campos</li>
+                    <li>No puedes quitar campos que tengan asignaciones aprobadas (Protegido)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+let tipoFiltroActual = 'todos';
+
+// Detectar si está en modo oscuro
+function isDarkMode() {
+    return document.documentElement.classList.contains('dark');
+}
+
+// Configuración de SweetAlert con modo oscuro
+function getSwalConfig() {
+    const darkMode = isDarkMode();
+    return {
+        background: darkMode ? '#1f2937' : '#ffffff',
+        color: darkMode ? '#f9fafb' : '#1f2937',
+        confirmButtonColor: darkMode ? '#3b82f6' : '#3b82f6',
+        cancelButtonColor: darkMode ? '#6b7280' : '#6b7280',
+    };
+}
+
+function toggleOpcionesValidas(tipoDato) {
+    const container = document.getElementById('opciones-validas-container');
+    if (tipoDato === 'OPCIONES') {
+        container.classList.remove('hidden');
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
+function filtrarCampos() {
+    const busqueda = document.getElementById('buscar-campo').value.toLowerCase();
+    const categoriaFiltro = document.getElementById('filtro-categoria').value;
+    const items = document.querySelectorAll('.campo-item');
+    let visibles = 0;
+
+    items.forEach(item => {
+        const nombre = item.getAttribute('data-nombre');
+        const codigo = item.getAttribute('data-codigo');
+        const categoria = item.getAttribute('data-categoria');
+        const tipo = item.getAttribute('data-tipo');
+
+        const coincideBusqueda = nombre.includes(busqueda) || codigo.includes(busqueda);
+        const coincideCategoria = !categoriaFiltro || categoria === categoriaFiltro;
+
+        let coincideTipo = true;
+        if (tipoFiltroActual === 'globales') {
+            coincideTipo = tipo === 'global';
+        } else if (tipoFiltroActual === 'personalizadas') {
+            coincideTipo = tipo === 'personalizada';
+        }
+
+        if (coincideBusqueda && coincideCategoria && coincideTipo) {
+            item.style.display = 'flex';
+            visibles++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    document.getElementById('total-campos-mostrados').textContent = visibles;
+
+    const sinResultados = document.getElementById('sin-resultados');
+    if (visibles === 0) {
+        sinResultados.classList.remove('hidden');
+    } else {
+        sinResultados.classList.add('hidden');
+    }
+}
+
+function filtrarPorTipo(tipo) {
+    tipoFiltroActual = tipo;
+
+    document.querySelectorAll('.filtro-tipo-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-blue-100', 'dark:bg-blue-900', 'text-blue-800', 'dark:text-blue-200');
+        btn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+    });
+
+    const btnActivo = document.querySelector(`.filtro-tipo-btn[data-tipo="${tipo}"]`);
+    if (btnActivo) {
+        btnActivo.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        btnActivo.classList.add('active', 'bg-blue-100', 'dark:bg-blue-900', 'text-blue-800', 'dark:text-blue-200');
+    }
+
+    filtrarCampos();
+}
+
+function seleccionarTodosDisponibles() {
+    const items = document.querySelectorAll('.campo-item');
+    let seleccionados = 0;
+
+    items.forEach(item => {
+        if (item.style.display !== 'none') {
+            const checkbox = item.querySelector('.campo-checkbox');
+            checkbox.checked = true;
+            seleccionados++;
+        }
+    });
+
+    if (seleccionados > 0) {
+        Swal.fire({
+            ...getSwalConfig(),
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `${seleccionados} campo(s) seleccionado(s)`,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+    }
+
+    actualizarContadorSeleccion();
+}
+
+// Formulario: Agregar Campos
+document.getElementById('form-agregar-campos').addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const form = this;
+
+    const checkboxes = document.querySelectorAll('.campo-checkbox:checked');
+    if (checkboxes.length === 0) {
+        Swal.fire({
+            ...getSwalConfig(),
+            icon: 'warning',
+            title: 'No hay campos seleccionados',
+            text: 'Debes seleccionar al menos un campo para agregar a la plantilla',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+
+    Swal.fire({
+        ...getSwalConfig(),
+        title: '¿Agregar campos a la plantilla?',
+        html: `Se agregarán <strong>${checkboxes.length} campo(s)</strong> a la plantilla.<br><br>
+               <small>Esto actualizará todos los {{ total_articulos }} artículos del proyecto.</small>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, agregar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                ...getSwalConfig(),
+                title: 'Agregando campos...',
+                html: 'Por favor espera mientras se actualizan los artículos',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Envío del formulario (submit real, no AJAX)
+            form.submit();
+        }
+    });
+});
+
+// Formulario: Crear Variable
+document.getElementById('form-crear-campo').addEventListener('submit', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const form = this;
+
+    const nombreCampo = document.getElementById('nombre').value;
+    const agregarPlantilla = document.getElementById('agregar_a_plantilla').checked;
+
+    Swal.fire({
+        ...getSwalConfig(),
+        title: '¿Crear nueva variable?',
+        html: `Se creará una nueva variable <strong>${nombreCampo}</strong>.<br><br>
+               <small>${agregarPlantilla ? 'Se agregará a la plantilla y actualizará todos los artículos.' : 'No se agregará automáticamente a la plantilla.'}</small>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, crear',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#22c55e'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                ...getSwalConfig(),
+                title: 'Creando variable...',
+                html: 'Por favor espera',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Envío del formulario (submit real, no AJAX)
+            form.submit();
+        }
+    });
+});
+
+function actualizarContadorSeleccion() {
+    const checkboxes = document.querySelectorAll('.campo-checkbox:checked');
+    const btnSubmit = document.querySelector('#form-agregar-campos button[type="submit"]');
+
+    if (checkboxes.length > 0) {
+        btnSubmit.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Agregar ${checkboxes.length} Campo(s) Seleccionado(s)</span>
+        `;
+    } else {
+        btnSubmit.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Agregar Campos Seleccionados</span>
+        `;
+    }
+}
+
+// Event Listeners de checkboxes
+document.querySelectorAll('.campo-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', actualizarContadorSeleccion);
+});
+
+// Inicialización al cargar el DOM
+document.addEventListener('DOMContentLoaded', function() {
+    actualizarContadorSeleccion();
+    filtrarCampos();
+
+    // Atajos de teclado
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + F para buscar
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('buscar-campo').focus();
+        }
+        // Escape para limpiar filtros
+        if (e.key === 'Escape') {
+            document.getElementById('buscar-campo').value = '';
+            document.getElementById('filtro-categoria').value = '';
+            filtrarCampos();
+        }
+    });
+
+    // Copiar código al hacer clic
+    document.querySelectorAll('code').forEach(code => {
+        code.style.cursor = 'pointer';
+        code.title = 'Clic para copiar';
+        code.addEventListener('click', function() {
+            navigator.clipboard.writeText(this.textContent).then(() => {
+                Swal.fire({
+                    ...getSwalConfig(),
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Código copiado',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+            });
+        });
+    });
+
+    // Animación de aparición con IntersectionObserver
+    const observador = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    entry.target.style.transition = 'all 0.3s ease-out';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, 100);
+                observador.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.campo-item').forEach(item => {
+        observador.observe(item);
+    });
+});
+</script>
+
+<style>
+/* Checkbox personalizado */
+.campo-checkbox:checked {
+    background-color: var(--color-primary, #3b82f6);
+    border-color: var(--color-primary, #3b82f6);
+}
+
+/* Scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Clase de carga */
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f4f6;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.dark .loading::after {
+    border-color: #374151;
+    border-top-color: #60a5fa;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar personalizada - Modo Claro */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Scrollbar personalizada - Modo Oscuro */
+.dark .overflow-y-auto::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Transiciones para campos */
+.campo-item {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Botón activo de filtro */
+.filtro-tipo-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.filtro-tipo-btn.active {
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .filtro-tipo-btn.active {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* SweetAlert2 - Modo Oscuro personalizado */
+.swal2-popup.swal2-modal {
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark .swal2-popup {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+}
+
+.dark .swal2-title,
+.dark .swal2-html-container {
+    color: #f9fafb !important;
+}
+
+.dark .swal2-confirm,
+.dark .swal2-cancel {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Animaciones suaves */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .grid.lg\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 4px;
+    }
+}
+
+/* Focus visible para accesibilidad */
+*:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.dark *:focus-visible {
+    outline-color: #60a5fa;
+}
+
+/* Mejoras de contraste en modo oscuro */
+.dark code {
+    background-color: #374151;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.dark .bg-gray-50 {
+    background-color: #374151;
+}
+
+.dark .border-gray-200 {
+    border-color: #4b5563;
+}
+</style>
+
+{% endblock %}

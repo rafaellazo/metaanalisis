@@ -1,0 +1,1393 @@
+{% extends 'base.html' %}
+{% load static custom_filters %}
+
+{% block title %}Artículos - {{ proyecto.nombre }} - PM{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Artículos</span>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Artículos del Proyecto</h1>
+                    <p class="text-gray-600 dark:text-gray-400">{{ proyecto.nombre }}</p>
+                </div>
+                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>Volver</span>
+                </a>
+            </div>
+
+            <div class="grid sm:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 dark:bg-opacity-20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Total</span>
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ total_articulos }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 dark:bg-opacity-20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-yellow-700 dark:text-yellow-300 font-medium">Pendientes</span>
+                        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{{ articulos_pendientes }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 dark:bg-opacity-20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-orange-700 dark:text-orange-300 font-medium">En Proceso</span>
+                        <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">{{ articulos_en_proceso }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-green-700 dark:text-green-300 font-medium">Aprobados</span>
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ articulos_aprobados }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-1 max-w-md">
+                    <div class="relative">
+                        <input type="text" id="searchInputGlobal" placeholder="Buscar en todos los artículos..." 
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <select id="statusFilterGlobal" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROCESO">En Proceso</option>
+                        <option value="EN_REVISION">En Revisión</option>
+                        <option value="APROBADO">Aprobado</option>
+                    </select>
+
+                    {# Enlace de descarga Excel del proyecto eliminado de aquí. Se agregó en el menú del Proyecto > Meta analisis. #}
+                    <a href="{% url 'articulos:agregar_articulo' proyecto.id %}" class="px-4 py-2 bg-primary hover:bg-primary-dark dark:bg-primary-neon dark:hover:bg-primary text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>Nuevo Artículo</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if usuario_proyecto.rol_proyecto == 'DUEÑO' %}
+        {% for up in colaboradores %}
+            {% with usuario=up.usuario %}
+                {% if usuario in articulos_por_colaborador %}
+                    {% with datos=articulos_por_colaborador|get_item:usuario %}
+                        <div class="mb-6">
+                            <button onclick="toggleAccordion('colab-{{ usuario.id }}')" class="w-full text-left p-6 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-transparent rounded-xl border border-blue-200 dark:border-blue-800 hover:from-blue-100 dark:hover:from-blue-800/30 transition-all duration-300 group">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 dark:from-blue-600 dark:via-blue-700 dark:to-blue-800 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
+                                            <span class="text-white text-lg font-bold">
+                                                {{ usuario.first_name|first|upper }}{{ usuario.last_name|first|upper }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                                                {{ usuario.get_full_name|default:usuario.username }}
+                                            </h2>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ datos.articulos.count }} artículo{{ datos.articulos.count|pluralize }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                                        <svg id="icon-colab-{{ usuario.id }}" class="w-6 h-6 text-blue-600 dark:text-blue-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </button>
+                            <div id="accordion-colab-{{ usuario.id }}" class="hidden mt-4">
+
+                                {% if datos.con_bib %}
+                                    <div class="mb-8">
+                                        <div class="relative">
+                                            <div class="flex items-center space-x-4 mb-6">
+                                                <div class="flex items-center space-x-3 flex-1">
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 dark:from-purple-600 dark:via-purple-700 dark:to-purple-800 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 20h16a1 1 0 001-1V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0014.586 3H5a1 1 0 00-1 1v15a1 1 0 001 1z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                                            Archivos BIB Cargados
+                                                            <span class="ml-3 text-sm font-normal px-3 py-1 bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 text-purple-700 dark:text-purple-300 rounded-full">Importados</span>
+                                                        </h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% regroup datos.con_bib by archivo_bib as grupos_bib %}
+                                    {% for grupo in grupos_bib %}
+                                        {% if grupo.grouper %}
+                                            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-purple-300 dark:hover:border-purple-700">
+                                                <button onclick="toggleAccordion('colab-{{ usuario.id }}-{{ grupo.grouper|slugify }}')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent dark:hover:from-purple-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                                                    <div class="flex items-center space-x-5">
+                                                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 dark:from-purple-600 dark:via-purple-700 dark:to-purple-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 group-hover:scale-105 transition-all duration-300">
+                                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <div class="text-left">
+                                                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{{ grupo.grouper }}</h3>
+                                                            <div class="flex items-center space-x-2">
+                                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 text-purple-700 dark:text-purple-300">
+                                                                    {{ grupo.list|length }} artículos
+                                                                </span>
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400">&bull;</span>
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400">Archivo BibTeX</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
+                                                            <svg id="icon-colab-{{ usuario.id }}-{{ grupo.grouper|slugify }}" class="w-6 h-6 text-purple-600 dark:text-purple-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                <div id="accordion-colab-{{ usuario.id }}-{{ grupo.grouper|slugify }}" class="hidden">
+                                                    
+                                                    <div class="px-8 pb-6 border-t border-gray-200 dark:border-gray-700 pt-6 bg-gray-50 dark:bg-gray-900/50">
+                                                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                                                            <div class="relative w-full sm:flex-grow max-w-lg">
+                                                                <input type="text" class="search-file w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200" placeholder="Buscar en este archivo...">
+                                                                <svg class="w-5 h-5 absolute left-4 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <button 
+                                                               onclick="generarForestPlot('{{ grupo.grouper|escapejs }}', '{{ usuario.id }}', '{{ proyecto.id }}')"
+                                                               class="flex-shrink-0 w-full sm:w-auto px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 font-semibold">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                                                                <span>Forest Plot</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="overflow-x-auto">
+                                                        <table class="w-full file-table">
+                                                            <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                                                <tr>
+                                                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                                                    <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                                {% for articulo in grupo.list %}
+                                                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors article-row" data-usuario="{{ usuario.id }}" data-estado="{{ articulo.estado }}">
+                                                                    <td class="px-6 py-4">
+                                                                        <div class="flex items-start space-x-3">
+                                                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center flex-shrink-0">
+                                                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                                </svg>
+                                                                            </div>
+                                                                            <div class="flex-1 min-w-0">
+                                                                                <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary-neon line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300{% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300{% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300{% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300{% endif %}">
+                                                                            {{ articulo.get_estado_display }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                        {{ articulo.fecha_carga|date:"d M Y" }}
+                                                                        <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                                                                    </td>
+                                                                    <td class="px-6 py-4 text-right">
+                                                                        <div class="flex items-center justify-end space-x-2">
+                                                                            {# Enlace Excel individual eliminado desde vista artículos; disponible en Proyecto > Meta analisis #}
+                                                                            {% if articulo.archivo_pdf %}
+                                                                            <a href="{% url 'articulos:analizar_articulo' articulo.id %}" class="p-2 text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors" title="Analizar con IA">
+                                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                                                                </svg>
+                                                                            </a>
+                                                                            {% endif %}
+                                                                            <button onclick="abrirModalDescarga('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:descargar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors" title="Descargar">
+                                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                                                </svg>
+                                                                            </button>
+                                                                            <button onclick="abrirModalEliminar('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:eliminar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar">
+                                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if datos.sin_bib %}
+                                    <div class="mb-8">
+                                        <div class="relative">
+                                            <div class="flex items-center space-x-4 mb-6">
+                                                <div class="flex items-center space-x-3 flex-1">
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 dark:from-orange-600 dark:via-orange-700 dark:to-orange-800 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6m0 0V8a2 2 0 00-2-2h-4a2 2 0 00-2 2v4m0 6a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2h-4a2 2 0 01-2-2v-4zM6 12a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                                            Artículos Manuales
+                                                            <span class="ml-3 text-sm font-normal px-3 py-1 bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 text-orange-700 dark:text-orange-300 rounded-full">Ingresados a Mano</span>
+                                                        </h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-700">
+                                        <button onclick="toggleAccordion('colab-{{ usuario.id }}-manuales')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-orange-50 hover:to-transparent dark:hover:from-orange-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                                            <div class="flex items-center space-x-5">
+                                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 dark:from-orange-600 dark:via-orange-700 dark:to-orange-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/30 group-hover:shadow-orange-500/50 group-hover:scale-105 transition-all duration-300">
+                                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                </div>
+                                                <div class="text-left">
+                                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Artículos Manuales</h3>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 text-orange-700 dark:text-orange-300">
+                                                            {{ datos.sin_bib|length }} artículos
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">&bull;</span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">Ingresados a Mano</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-800 transition-colors">
+                                                    <svg id="icon-colab-{{ usuario.id }}-manuales" class="w-6 h-6 text-orange-600 dark:text-orange-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <div id="accordion-colab-{{ usuario.id }}-manuales" class="hidden">
+                                            <div class="overflow-x-auto">
+                                                <table class="w-full">
+                                                    <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                                        <tr>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {% for articulo in datos.sin_bib %}
+                                                        <tr class="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors article-row" data-usuario="{{ usuario.id }}" data-estado="{{ articulo.estado }}">
+                                                            <td class="px-6 py-4">
+                                                                <div class="flex items-start space-x-3">
+                                                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700 flex items-center justify-center flex-shrink-0">
+                                                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300{% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300{% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300{% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300{% endif %}">
+                                                                    {{ articulo.get_estado_display }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                {{ articulo.fecha_carga|date:"d M Y" }}
+                                                                <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                                                            </td>
+                                                            <td class="px-6 py-4 text-right">
+                                                                <div class="flex items-center justify-end space-x-2">
+                                                                    {# Enlace Excel individual eliminado (usar Proyecto > Meta analisis) #}
+                                                                    <button onclick="abrirModalDescarga('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:descargar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors" title="Descargar">
+                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                    <button onclick="abrirModalEliminar('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:eliminar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar">
+                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if datos.con_pdf %}
+                                    <div class="mb-8">
+                                        <div class="relative">
+                                            <div class="flex items-center space-x-4 mb-6">
+                                                <div class="flex items-center space-x-3 flex-1">
+                                                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 flex items-center justify-center shadow-lg shadow-red-500/30">
+                                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                                            PDFs Cargados
+                                                            <span class="ml-3 text-sm font-normal px-3 py-1 bg-red-100 dark:bg-red-900 dark:bg-opacity-30 text-red-700 dark:text-red-300 rounded-full">Archivos</span>
+                                                        </h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-red-300 dark:hover:border-red-700">
+                                        <button onclick="toggleAccordion('colab-{{ usuario.id }}-pdfs')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-red-50 hover:to-transparent dark:hover:from-red-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                                            <div class="flex items-center space-x-5">
+                                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/30 group-hover:shadow-red-500/50 group-hover:scale-105 transition-all duration-300">
+                                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                </div>
+                                                <div class="text-left">
+                                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">PDFs</h3>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900 dark:bg-opacity-30 text-red-700 dark:text-red-300">
+                                                            {{ datos.con_pdf|length }} artículos
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">&bull;</span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">Documentos Guardados</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-red-200 dark:group-hover:bg-red-800 transition-colors">
+                                                    <svg id="icon-colab-{{ usuario.id }}-pdfs" class="w-6 h-6 text-red-600 dark:text-red-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <div id="accordion-colab-{{ usuario.id }}-pdfs" class="hidden">
+                                            <div class="overflow-x-auto">
+                                                <table class="w-full">
+                                                    <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                                        <tr>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                        {% for articulo in datos.con_pdf %}
+                                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors article-row" data-usuario="{{ usuario.id }}" data-estado="{{ articulo.estado }}">
+                                                            <td class="px-6 py-4">
+                                                                <div class="flex items-start space-x-3">
+                                                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-400 to-red-600 dark:from-red-500 dark:to-red-700 flex items-center justify-center flex-shrink-0">
+                                                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+                                                                    {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300
+                                                                    {% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300
+                                                                    {% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300
+                                                                    {% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300
+                                                                    {% endif %}">
+                                                                    {{ articulo.get_estado_display }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                                {{ articulo.fecha_carga|date:"d M Y" }}
+                                                                <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                                                            </td>
+                                                            <td class="px-6 py-4 text-right">
+                                                                <div class="flex items-center justify-end space-x-2">
+                                                                    <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="p-2 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors" title="Ver PDF">
+                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                                        </svg>
+                                                                    </a>
+                                                                    <button onclick="confirmarEliminarPDF('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}')" class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar PDF">
+                                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+
+        {% if not articulos_por_colaborador %}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
+                <p class="text-gray-500 dark:text-gray-400">No hay artículos asignados a colaboradores aún.</p>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- SECCIONES PARA COLABORADORES Y SUPERVISORES -->
+        <div class="mb-6">
+            <button onclick="toggleAccordion('colab-{{ request.user.id }}')" class="w-full text-left p-6 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-transparent rounded-xl border border-blue-200 dark:border-blue-800 hover:from-blue-100 dark:hover:from-blue-800/30 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 dark:from-blue-600 dark:via-blue-700 dark:to-blue-800 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
+                            <span class="text-white text-lg font-bold">
+                                {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                            </span>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ articulos.count }} artículo{{ articulos.count|pluralize }}</p>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                        <svg id="icon-colab-{{ request.user.id }}" class="w-6 h-6 text-blue-600 dark:text-blue-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            <div id="accordion-colab-{{ request.user.id }}" class="hidden mt-4">
+                {% regroup articulos by archivo_bib as articulos_por_archivo %}
+
+    <div class="mb-8">
+            <div class="relative">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 dark:from-purple-600 dark:via-purple-700 dark:to-purple-800 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 0l-3 3m3-3l3 3M4 20h16a1 1 0 001-1V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0014.586 3H5a1 1 0 00-1 1v15a1 1 0 001 1z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                Archivos BIB Cargados
+                                <span class="ml-3 text-sm font-normal px-3 py-1 bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 text-purple-700 dark:text-purple-300 rounded-full">Importados</span>
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Artículos importados desde archivos de referencias bibliográficas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-300 dark:via-purple-700 to-transparent"></div>
+            </div>
+        </div>
+
+        {% if articulos_con_bib %}
+            {% for grupo in articulos_por_archivo %}
+                {% if grupo.grouper %}
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-purple-300 dark:hover:border-purple-700">
+                        <button onclick="toggleAccordion('{{ grupo.grouper|slugify }}')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-purple-50 hover:to-transparent dark:hover:from-purple-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                            <div class="flex items-center space-x-5">
+                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 dark:from-purple-600 dark:via-purple-700 dark:to-purple-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 group-hover:scale-105 transition-all duration-300">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{{ grupo.grouper }}</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 text-purple-700 dark:text-purple-300">
+                                            {{ grupo.list|length }} artículos
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">•</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Archivo BibTeX</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
+                                    <svg id="icon-{{ grupo.grouper|slugify }}" class="w-6 h-6 text-purple-600 dark:text-purple-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </button>
+                        <div id="accordion-{{ grupo.grouper|slugify }}" class="hidden">
+                            
+                            <div class="px-8 pb-6 border-t border-gray-200 dark:border-gray-700 pt-6 bg-gray-50 dark:bg-gray-900/50">
+                                <div class="flex flex-col sm:flex-row items-center gap-4">
+                                    <div class="relative w-full sm:flex-grow max-w-lg">
+                                        <input type="text" class="search-file w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200" placeholder="Buscar en este archivo...">
+                                        <svg class="w-5 h-5 absolute left-4 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <button 
+                                       onclick="generarForestPlot('{{ grupo.grouper|escapejs }}', '{{ request.user.id }}', '{{ proyecto.id }}')"
+                                       class="flex-shrink-0 w-full sm:w-auto px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 font-semibold">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                                        <span>Forest Plot</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full file-table">
+                                    <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Descarga</th>
+                                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        {% for articulo in grupo.list %}
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors article-row" data-estado="{{ articulo.estado }}" data-articulo-id="{{ articulo.id }}" data-doi="{{ articulo.doi|default:articulo.metadata_completos.doi }}">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-start space-x-3">
+                                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary-neon line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+                                                    {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300
+                                                    {% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300
+                                                    {% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300
+                                                    {% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300
+                                                    {% endif %}">
+                                                    {{ articulo.get_estado_display }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                                {{ articulo.fecha_carga|date:"d M Y" }}
+                                                <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                                            </td>
+                                            <td class="px-6 py-4 text-center" data-open-access="{% if articulo.es_open_access == True %}true{% elif articulo.es_open_access == False %}false{% else %}unknown{% endif %}">
+                                                {% if articulo.es_open_access == True %}
+                                                    <div class="inline-flex items-center justify-center">
+                                                        <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center" title="Disponible en Open Access">
+                                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                {% elif articulo.es_open_access == False %}
+                                                    <div class="inline-flex items-center justify-center">
+                                                        <div class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center" title="No disponible en Open Access">
+                                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="inline-flex items-center justify-center">
+                                                        <div class="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center animate-pulse" title="Consultando...">
+                                                            <span class="text-xs text-white font-bold">?</span>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-6 py-4 text-right">
+                                                <div class="flex items-center justify-end space-x-2">
+                                                    {# Enlace Excel individual eliminado (usar Proyecto > Meta analisis) #}
+                                                    <button onclick="abrirModalDescarga('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:descargar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors" title="Descargar">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <button onclick="abrirModalEliminar('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:eliminar_articulo' articulo.id %}')" class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="bg-gradient-to-br from-white to-purple-50 dark:from-gray-800 dark:to-purple-900/10 rounded-2xl shadow-xl border-2 border-dashed border-purple-300 dark:border-purple-700 overflow-hidden mb-6">
+                <div class="p-12 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900 dark:bg-opacity-30 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400 mb-2">No hay artículos importados desde archivos BIB</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500">Sube un archivo .bib para importar referencias</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="mb-8 mt-12">
+            <div class="relative">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 dark:from-orange-600 dark:via-orange-700 dark:to-orange-800 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                Artículos Manuales
+                                <span class="ml-3 text-sm font-normal px-3 py-1 bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 text-orange-700 dark:text-orange-300 rounded-full">Individuales</span>
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Artículos agregados de forma individual y personalizada</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-300 dark:via-orange-700 to-transparent"></div>
+            </div>
+        </div>
+
+        {% if articulos_sin_bib %}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-700">
+                <button onclick="toggleAccordion('colab-{{ request.user.id }}-sin-bib')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-orange-50 hover:to-transparent dark:hover:from-orange-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                    <div class="flex items-center space-x-5">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 dark:from-orange-600 dark:via-orange-700 dark:to-orange-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/30 group-hover:shadow-orange-500/50 group-hover:scale-105 transition-all duration-300">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Artículos Manuales</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 text-orange-700 dark:text-orange-300">
+                                    {{ articulos_sin_bib|length }} artículos
+                                </span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">•</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Ingresados a Mano</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-800 transition-colors">
+                            <svg id="icon-colab-{{ request.user.id }}-sin-bib" class="w-6 h-6 text-orange-600 dark:text-orange-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+                <div id="accordion-colab-{{ request.user.id }}-sin-bib" class="hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                {% for articulo in articulos_sin_bib %}
+                                <tr class="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors article-row" data-estado="{{ articulo.estado }}">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+                                            {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300
+                                            {% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300
+                                            {% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300
+                                            {% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300
+                                            {% endif %}">
+                                            {{ articulo.get_estado_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        {{ articulo.fecha_carga|date:"d M Y" }}
+                                        <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            {# Enlace Excel individual eliminado (usar Proyecto > Meta analisis) #}
+                                            <button onclick="abrirModalDescarga('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:descargar_articulo' articulo.id %}')"
+                                                class="p-2 text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors" title="Descargar">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                </svg>
+                                            </button>
+                                            <button onclick="abrirModalEliminar('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}', '{% url 'articulos:eliminar_articulo' articulo.id %}')"
+                                                class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-gradient-to-br from-white to-orange-50 dark:from-gray-800 dark:to-orange-900/10 rounded-2xl shadow-xl border-2 border-dashed border-orange-300 dark:border-orange-700 overflow-hidden mb-6">
+                <div class="p-12 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 dark:bg-orange-900 dark:bg-opacity-30 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 dark:text-gray-400 mb-2">No hay artículos ingresados manualmente</p>
+                    <p class="text-sm text-gray-400 dark:text-gray-500">Agrega artículos individuales usando el botón "Nuevo Artículo"</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Sección de PDFs (Para Colaboradores) -->
+        {% if not es_dueño and articulos_con_pdf %}
+        <div class="mb-8 mt-12">
+            <div class="relative">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 flex items-center justify-center shadow-lg shadow-red-500/30">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                                Artículos con PDF
+                                <span class="ml-3 text-sm font-normal px-3 py-1 bg-red-100 dark:bg-red-900 dark:bg-opacity-30 text-red-700 dark:text-red-300 rounded-full">Documentos</span>
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Artículos con archivos PDF guardados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-300 dark:via-red-700 to-transparent"></div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hover:shadow-2xl transition-all duration-300 hover:border-red-300 dark:hover:border-red-700">
+            <button onclick="toggleAccordion('colab-{{ request.user.id }}-con-pdf')" class="w-full p-8 flex items-center justify-between hover:bg-gradient-to-r hover:from-red-50 hover:to-transparent dark:hover:from-red-900/20 dark:hover:to-transparent transition-all duration-300 group">
+                <div class="flex items-center space-x-5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-500/30 group-hover:shadow-red-500/50 group-hover:scale-105 transition-all duration-300">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">PDFs</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900 dark:bg-opacity-30 text-red-700 dark:text-red-300">
+                                {{ articulos_con_pdf|length }} artículos
+                            </span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">•</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Documentos Guardados</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900 dark:bg-opacity-30 flex items-center justify-center group-hover:bg-red-200 dark:group-hover:bg-red-800 transition-colors">
+                        <svg id="icon-colab-{{ request.user.id }}-con-pdf" class="w-6 h-6 text-red-600 dark:text-red-400 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </button>
+            <div id="accordion-colab-{{ request.user.id }}-con-pdf" class="hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Título</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for articulo in articulos_con_pdf %}
+                        <tr class="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors article-row" data-estado="{{ articulo.estado }}">
+                            <td class="px-6 py-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-400 to-red-600 dark:from-red-500 dark:to-red-700 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="text-sm font-semibold text-gray-900 dark:text-white hover:text-red-600 dark:hover:text-red-400 line-clamp-2 transition-colors">{{ articulo.titulo }}</a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-estado="{{ articulo.estado }}">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+                                    {% if articulo.estado == 'PENDIENTE' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300
+                                    {% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300
+                                    {% elif articulo.estado == 'EN_REVISION' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:bg-opacity-30 dark:text-blue-300
+                                    {% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300
+                                    {% endif %}">
+                                    {{ articulo.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                {{ articulo.fecha_carga|date:"d M Y" }}
+                                <span class="block text-xs text-gray-500">{{ articulo.fecha_carga|time:"H:i" }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="p-2 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors" title="Ver PDF">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        </svg>
+                                    </a>
+                                    <button onclick="confirmarEliminarPDF('{{ articulo.id }}', '{{ articulo.titulo|escapejs }}')" class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar PDF">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<div id="modalDescarga" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalDescargaContent">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 dark:bg-opacity-30 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Descargar Artículo</h3>
+                </div>
+                <button onclick="cerrarModalDescarga()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-600 dark:text-gray-400 mb-4">¿Deseas descargar este artículo en formato BibTeX?</p>
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2" id="tituloArticuloDescarga"></p>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button onclick="cerrarModalDescarga()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">Cancelar</button>
+                <button onclick="confirmarDescarga()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Descargar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalEliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalEliminarContent">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 dark:bg-opacity-30 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Eliminar Artículo</h3>
+                </div>
+                <button onclick="cerrarModalEliminar()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="bg-red-50 dark:bg-red-900 dark:bg-opacity-20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-red-800 dark:text-red-300 font-medium">⚠️ Esta acción no se puede deshacer</p>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">¿Estás seguro de que deseas eliminar este artículo?</p>
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2" id="tituloArticuloEliminar"></p>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3">
+                <button onclick="cerrarModalEliminar()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">Cancelar</button>
+                <button onclick="confirmarEliminacion()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span>Eliminar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalForestPlot" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalForestPlotContent">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 dark:bg-opacity-30 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Forest Plot de Efectos</h3>
+                </div>
+                <button onclick="cerrarModalForestPlot()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-600 dark:text-gray-400 mb-4" id="forestPlotSubtitle">Generando gráfico para los artículos en este grupo...</p>
+                <div id="forestPlotContainer" class="w-full h-[500px] bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+                    <p class="text-gray-500" id="forestPlotLoading">Cargando datos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+// Variables globales
+let articuloActual = { id: null, titulo: '', url: '' };
+const csrfToken = getCookie('csrftoken'); // Obtener CSRF token una vez
+
+// Funciones de modales (Descarga)
+function abrirModalDescarga(articuloId, titulo, urlDescarga) {
+    articuloActual = { id: articuloId, titulo: titulo, url: urlDescarga };
+    document.getElementById('tituloArticuloDescarga').textContent = titulo;
+    const modal = document.getElementById('modalDescarga');
+    const content = document.getElementById('modalDescargaContent');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+function cerrarModalDescarga() {
+    const modal = document.getElementById('modalDescarga');
+    const content = document.getElementById('modalDescargaContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
+}
+function confirmarDescarga() {
+    window.location.href = articuloActual.url;
+    cerrarModalDescarga();
+}
+
+// Funciones de modales (Eliminación)
+function abrirModalEliminar(articuloId, titulo, urlEliminar) {
+    articuloActual = { id: articuloId, titulo: titulo, url: urlEliminar };
+    document.getElementById('tituloArticuloEliminar').textContent = titulo;
+    const modal = document.getElementById('modalEliminar');
+    const content = document.getElementById('modalEliminarContent');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+function cerrarModalEliminar() {
+    const modal = document.getElementById('modalEliminar');
+    const content = document.getElementById('modalEliminarContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
+}
+function confirmarEliminacion() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = articuloActual.url;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Función para eliminar PDF
+function confirmarEliminarPDF(articuloId, titulo) {
+    if (confirm(`¿Deseas eliminar el PDF de "${titulo}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/articulos/eliminar-pdf/${articuloId}/`;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// ===== NUEVAS FUNCIONES PARA FOREST PLOT (ACTUALIZADAS) =====
+function abrirModalForestPlot() {
+    const modal = document.getElementById('modalForestPlot');
+    const content = document.getElementById('modalForestPlotContent');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+function cerrarModalForestPlot() {
+    const modal = document.getElementById('modalForestPlot');
+    const content = document.getElementById('modalForestPlotContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        // Limpiar el gráfico y el error al cerrar
+        const containerEl = document.getElementById('forestPlotContainer');
+        containerEl.innerHTML = '<p class="text-gray-500" id="forestPlotLoading">Cargando datos...</p>';
+    }, 300);
+}
+
+function generarForestPlot(archivoBib, usuarioId, proyectoId) {
+    // 1. Usamos los códigos que definimos de tu archivo fixtures.
+    // ¡YA NO SE PREGUNTA NADA AL USUARIO!
+    const effectCode = "correlacion_r"; 
+    const errorCode = "se_efecto";
+
+    // 2. Abrir el modal y mostrar carga
+    abrirModalForestPlot();
+    document.getElementById('forestPlotSubtitle').textContent = `Generando gráfico para el archivo: ${archivoBib}`;
+    const loadingEl = document.getElementById('forestPlotLoading');
+    const containerEl = document.getElementById('forestPlotContainer');
+    loadingEl.style.display = 'block';
+
+    // 3. Construir la URL (Esta URL AHORA EXISTE en urls.py)
+    const url = `/articulos/proyecto/${proyectoId}/generar-forest-plot/`;
+
+    // 4. Enviar los datos necesarios al backend
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            'archivo_bib': archivoBib,
+            'usuario_id': usuarioId,
+            'effect_size_code': effectCode, // Hardcoded
+            'standard_error_code': errorCode // Hardcoded
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Si la respuesta no es 200 OK, intentar leer el error como JSON
+            return response.json().then(errData => {
+                throw new Error(errData.error || `Error ${response.status}`);
+            });
+        }
+        return response.json(); // Si es 200 OK, procesar como JSON
+    })
+    .then(data => {
+        if (data.success) {
+            // 5. Dibujar el gráfico con Plotly
+            loadingEl.style.display = 'none';
+            const plotData = data.plot_data.data;
+            const plotLayout = data.plot_data.layout;
+            Plotly.newPlot('forestPlotContainer', plotData, plotLayout, {responsive: true});
+        } else {
+            // 6. Mostrar error de lógica (ej. "campos no encontrados")
+            containerEl.innerHTML = `<p class="text-red-500 p-4">${data.error}</p>`;
+        }
+    })
+    .catch(error => {
+        // 7. Mostrar error de red o sintaxis (el error que tenías antes)
+        console.error('Error fetching forest plot data:', error);
+        containerEl.innerHTML = `<p class="text-red-500 p-4">Error al conectar: ${error.message}</p>`;
+    });
+}
+// ===== FIN DE FUNCIONES DE FOREST PLOT =====
+
+
+// Función de acordeón (soporta múltiples niveles)
+function toggleAccordion(id) {
+    const content = document.getElementById(`accordion-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+    if (content && icon) {
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            content.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+}
+
+// Búsqueda y filtros
+document.addEventListener('DOMContentLoaded', function() {
+    // Búsqueda individual por archivo
+    document.querySelectorAll('.search-file').forEach(input => {
+        input.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const table = this.closest('[id^="accordion-"]').querySelector('.file-table');
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    });
+
+    // Búsqueda global
+    const globalSearch = document.getElementById('searchInputGlobal');
+    const globalFilter = document.getElementById('statusFilterGlobal');
+    
+    // NOTA: 'userValue' no está definido en tu script original, lo removeré.
+    function filterAllTables() {
+        const searchTerm = globalSearch ? globalSearch.value.toLowerCase() : '';
+        const statusValue = globalFilter ? globalFilter.value : '';
+
+        document.querySelectorAll('.article-row').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const matchesSearch = text.includes(searchTerm);
+            let matchesStatus = true;
+            let matchesUser = true; // Mantengo esto por si lo usas
+            
+            if (statusValue) {
+                const estadoCell = row.querySelector('[data-estado]');
+                matchesStatus = estadoCell && estadoCell.dataset.estado === statusValue;
+            }
+            
+            // Tu script original tenía 'userValue' sin definir. Lo comento.
+            // if (userValue) {
+            //     const usuarioCell = row.dataset.usuario;
+            //     matchesUser = usuarioCell && usuarioCell === userValue;
+            // }
+
+            row.style.display = (matchesSearch && matchesStatus && matchesUser) ? '' : 'none';
+        });
+    }
+
+    if (globalSearch) globalSearch.addEventListener('input', filterAllTables);
+    if (globalFilter) globalFilter.addEventListener('change', filterAllTables);
+
+    // Cerrar modales con clic fuera o Escape
+    [document.getElementById('modalDescarga'), document.getElementById('modalEliminar'), document.getElementById('modalForestPlot')].forEach(modal => {
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    if (modal.id === 'modalDescarga') cerrarModalDescarga();
+                    if (modal.id === 'modalEliminar') cerrarModalEliminar();
+                    if (modal.id === 'modalForestPlot') cerrarModalForestPlot();
+                }
+            });
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModalDescarga();
+            cerrarModalEliminar();
+            cerrarModalForestPlot();
+        }
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// 🆕 ==================== CONSULTAR OPEN ACCESS DESDE FRONT ====================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Consultar estado de open access para artículos con DOI
+    const articulosCeldas = document.querySelectorAll('tr[data-articulo-id]');
+    
+    articulosCeldas.forEach(function(fila) {
+        const articuloId = fila.getAttribute('data-articulo-id');
+        const doiCelda = fila.getAttribute('data-doi');
+        const descargaCelda = fila.querySelector('[data-open-access]');
+        
+        if (doiCelda && descargaCelda) {
+            consultarOpenAccessUnpaywall(doiCelda, descargaCelda);
+        }
+    });
+});
+
+function consultarOpenAccessUnpaywall(doi, celda) {
+    /**Consulta asincranamente Unpaywall API*/
+    
+    // Limpiar DOI
+    const doiLimpio = doi.replace('https://doi.org/', '').replace('http://doi.org/', '').trim();
+    
+    fetch(`https://api.unpaywall.org/v2/${doiLimpio}?email=admin@pymetanalis.com`)
+        .then(response => response.json())
+        .then(data => {
+            const esOpenAccess = data.is_oa === true;
+            
+            // Actualizar visualmente la celda
+            celda.innerHTML = '';
+            
+            if (esOpenAccess) {
+                celda.innerHTML = `
+                    <div class="inline-flex items-center justify-center">
+                        <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center" title="Disponible en Open Access">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                celda.setAttribute('data-open-access', 'true');
+            } else {
+                celda.innerHTML = `
+                    <div class="inline-flex items-center justify-center">
+                        <div class="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center" title="No disponible en Open Access">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+                celda.setAttribute('data-open-access', 'false');
+            }
+        })
+        .catch(error => {
+            console.error('Error consultando Unpaywall:', error);
+        });
+}
+
+
+</script>
+{% endblock %}

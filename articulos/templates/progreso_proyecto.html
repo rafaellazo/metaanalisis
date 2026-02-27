@@ -1,0 +1,940 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Estadísticas - {{ proyecto.nombre }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progreso_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon transition-colors">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon transition-colors">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Estadísticas del Proyecto</span>
+    </nav>
+
+    <!-- Header Compacto -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Estadísticas del Proyecto</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ proyecto.nombre }}</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'articulos:exportar_estadisticas' proyecto.id %}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all text-sm font-medium flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Exportar JSON</span>
+                </a>
+                <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-sm font-medium">
+                    ← Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs Generales -->
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+        <!-- Total Artículos -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_articulos }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Total Artículos</p>
+        </div>
+
+        <!-- Aprobados -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ articulos_aprobados }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Aprobados ({{ porcentaje_aprobados }}%)</p>
+        </div>
+
+        <!-- En Proceso -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ articulos_en_proceso|add:articulos_en_revision }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">En Proceso ({{ porcentaje_en_proceso }}%)</p>
+        </div>
+
+        <!-- Total Campos -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_asignaciones }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Total Campos</p>
+        </div>
+
+        <!-- Campos Completados -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ asignaciones_completadas }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Completados ({{ porcentaje_campos_completados }}%)</p>
+        </div>
+
+        <!-- Campos Pendientes -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ asignaciones_pendientes }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Pendientes</p>
+        </div>
+    </div>
+
+    <!-- Top 10 Campos Más Usados - DESTACADO -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border-2 border-indigo-500 dark:border-indigo-400 mb-6">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Top 10 Campos Más Utilizados</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Los campos más asignados en todo el proyecto</p>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center space-x-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                    <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Gráfico Principal</span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if chart_data.top_campos.nombres %}
+                <div id="topCamposChart" style="height: 600px;"></div>
+            {% else %}
+                <div class="flex flex-col items-center justify-center py-20">
+                    <svg class="w-20 h-20 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium text-lg">No hay campos asignados</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Gráficos Principales -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Distribución de Estados -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Distribución de Estados</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Estado actual de todos los artículos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="estadosChart" style="height: 350px;"></div>
+            </div>
+        </div>
+
+        <!-- Campos por Categoría -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Campos por Categoría</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Distribución de campos completados y pendientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="categoriasChart" style="height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline de Actividad -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Timeline de Actividad</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Actividad del proyecto en los últimos 30 días</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if chart_data.timeline.fechas %}
+                <div id="timelineChart" style="height: 350px;"></div>
+            {% else %}
+                <div class="flex flex-col items-center justify-center py-16">
+                    <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium">Sin actividad en los últimos 30 días</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Distribución por Archivo BIB -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Distribución por Archivo BIB</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Top 10 archivos con más artículos</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if chart_data.archivos.nombres %}
+                <div id="archivosChart" style="height: 400px;"></div>
+            {% else %}
+                <div class="flex flex-col items-center justify-center py-16">
+                    <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium">No hay archivos BIB</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+
+<!-- Script con datos del template -->
+<script id="chart-data" type="application/json">
+{
+    "estados": {
+        "labels": {{ chart_data.estados.labels|safe }},
+        "data": {{ chart_data.estados.data|safe }},
+        "porcentajes": {{ chart_data.estados.porcentajes|safe }}
+    },
+    "categorias": {
+        "labels": {{ chart_data.categorias.labels|safe }},
+        "total": {{ chart_data.categorias.total|safe }},
+        "completados": {{ chart_data.categorias.completados|safe }},
+        "aprobados": {{ chart_data.categorias.aprobados|safe }},
+        "pendientes": {{ chart_data.categorias.pendientes|safe }}
+    },
+    "timeline": {
+        "fechas": {{ chart_data.timeline.fechas|safe }},
+        "aprobaciones": {{ chart_data.timeline.aprobaciones|safe }},
+        "asignaciones": {{ chart_data.timeline.asignaciones|safe }},
+        "actualizaciones": {{ chart_data.timeline.actualizaciones|safe }},
+        "total": {{ chart_data.timeline.total|safe }}
+    },
+    "topCampos": {
+        "nombres": {{ chart_data.top_campos.nombres|safe }},
+        "total": {{ chart_data.top_campos.total|safe }},
+        "completadas": {{ chart_data.top_campos.completadas|safe }},
+        "aprobadas": {{ chart_data.top_campos.aprobadas|safe }},
+        "tasaCompletado": {{ chart_data.top_campos.tasa_completado|safe }}
+    },
+    "archivos": {
+        "nombres": {{ chart_data.archivos.nombres|safe }},
+        "total": {{ chart_data.archivos.total|safe }},
+        "aprobados": {{ chart_data.archivos.aprobados|safe }},
+        "enProceso": {{ chart_data.archivos.en_proceso|safe }},
+        "pendientes": {{ chart_data.archivos.pendientes|safe }}
+    },
+    "hasTimeline": {{ chart_data.timeline.fechas|yesno:"true,false" }},
+    "hasTopCampos": {{ chart_data.top_campos.nombres|yesno:"true,false" }},
+    "hasArchivos": {{ chart_data.archivos.nombres|yesno:"true,false" }}
+}
+</script>
+
+<!-- Script de inicialización INLINE -->
+<script>
+(function() {
+    'use strict';
+
+    function waitForApexCharts(callback, maxAttempts = 10) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            if (typeof ApexCharts !== 'undefined') {
+                clearInterval(interval);
+                console.log('ApexCharts cargado');
+                callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error('ApexCharts no se cargó');
+            }
+        }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => waitForApexCharts(init));
+    } else {
+        waitForApexCharts(init);
+    }
+
+    function init() {
+        console.log('Inicializando Dashboard del Proyecto...');
+        
+        const chartDataElement = document.getElementById('chart-data');
+        if (!chartDataElement) return;
+
+        let chartData;
+        try {
+            chartData = JSON.parse(chartDataElement.textContent);
+        } catch (e) {
+            console.error('❌ Error:', e);
+            return;
+        }
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const colors = {
+            text: isDark ? '#D1D5DB' : '#374151',
+            grid: isDark ? '#374151' : '#E5E7EB',
+            background: isDark ? '#1F2937' : '#FFFFFF',
+            completado: '#10B981',
+            aprobado: '#3B82F6',
+            pendiente: '#EF4444',
+            primary: '#6366F1'
+        };
+
+        // Inicializar todos los gráficos
+        initEstadosChart(chartData.estados, colors, isDark);
+        initCategoriasChart(chartData.categorias, colors, isDark);
+        
+        if (chartData.hasTimeline) {
+            initTimelineChart(chartData.timeline, colors, isDark);
+        }
+        if (chartData.hasTopCampos) {
+            initTopCamposChart(chartData.topCampos, colors, isDark);
+        }
+        if (chartData.hasArchivos) {
+            initArchivosChart(chartData.archivos, colors, isDark);
+        }
+
+        // Observar cambios en el modo oscuro
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    const isDarkNow = document.documentElement.classList.contains('dark');
+                    console.log('🌓 Cambio de tema detectado:', isDarkNow ? 'Oscuro' : 'Claro');
+                    
+                    // Actualizar colores
+                    const newColors = {
+                        text: isDarkNow ? '#D1D5DB' : '#374151',
+                        grid: isDarkNow ? '#374151' : '#E5E7EB',
+                        background: isDarkNow ? '#1F2937' : '#FFFFFF',
+                        completado: '#10B981',
+                        aprobado: '#3B82F6',
+                        pendiente: '#EF4444',
+                        primary: '#6366F1'
+                    };
+                    
+                    // Destruir y recrear todos los gráficos con los nuevos colores
+                    destroyAllCharts();
+                    
+                    setTimeout(() => {
+                        initEstadosChart(chartData.estados, newColors, isDarkNow);
+                        initCategoriasChart(chartData.categorias, newColors, isDarkNow);
+                        
+                        if (chartData.hasTimeline) {
+                            initTimelineChart(chartData.timeline, newColors, isDarkNow);
+                        }
+                        if (chartData.hasTopCampos) {
+                            initTopCamposChart(chartData.topCampos, newColors, isDarkNow);
+                        }
+                        if (chartData.hasArchivos) {
+                            initArchivosChart(chartData.archivos, newColors, isDarkNow);
+                        }
+                    }, 100);
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        console.log('Observer de tema activado');
+    }
+
+    // Función para destruir todos los gráficos
+    function destroyAllCharts() {
+        const chartIds = ['estadosChart', 'categoriasChart', 'timelineChart', 'topCamposChart', 'archivosChart'];
+        
+        chartIds.forEach(id => {
+            const container = document.getElementById(id);
+            if (container && container._chartInstance) {
+                try {
+                    container._chartInstance.destroy();
+                    container._chartInstance = null;
+                    console.log('🗑️ Gráfico destruido:', id);
+                } catch (e) {
+                    console.warn('Error al destruir gráfico:', id, e);
+                }
+            }
+        });
+    }
+
+    // ==================== GRÁFICO DE ESTADOS ====================
+    function initEstadosChart(data, colors, isDark) {
+        const container = document.getElementById('estadosChart');
+        if (!container) return;
+
+        const options = {
+            series: data.data,
+            chart: {
+                type: 'donut',
+                height: 350,
+                background: colors.background,
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            labels: data.labels,
+            colors: ['#F59E0B', '#3B82F6', '#8B5CF6', '#10B981', '#6366F1'],
+            legend: {
+                position: 'bottom',
+                labels: { colors: colors.text, fontSize: '13px' },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 10, vertical: 8 }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: colors.text
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '28px',
+                                fontWeight: 'bold',
+                                color: colors.text
+                            },
+                            total: {
+                                show: true,
+                                label: 'Total Artículos',
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: colors.text,
+                                formatter: (w) => w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                            }
+                        }
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                style: { fontSize: '13px', fontWeight: 600 },
+                dropShadow: { enabled: false }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                y: {
+                    formatter: function(val, { seriesIndex, w }) {
+                        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                        const percent = ((val / total) * 100).toFixed(1);
+                        return val + ' artículos (' + percent + '%)';
+                    }
+                }
+            },
+            stroke: {
+                width: 3,
+                colors: [isDark ? '#1F2937' : '#FFFFFF']
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        
+        // Guardar referencia del chart
+        container._chartInstance = chart;
+        
+        console.log('Gráfico de Estados renderizado');
+    }
+
+    // ==================== GRÁFICO DE CATEGORÍAS ====================
+    function initCategoriasChart(data, colors, isDark) {
+        const container = document.getElementById('categoriasChart');
+        if (!container) return;
+
+        const options = {
+            series: [
+                { name: 'Completados', data: data.completados },
+                { name: 'Aprobados', data: data.aprobados },
+                { name: 'Pendientes', data: data.pendientes }
+            ],
+            chart: {
+                type: 'bar',
+                height: 350,
+                stacked: true,
+                background: colors.background,
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    borderRadius: 8,
+                    columnWidth: '65%',
+                    borderRadiusApplication: 'end'
+                }
+            },
+            colors: [colors.completado, colors.aprobado, colors.pendiente],
+            dataLabels: {
+                enabled: false
+            },
+            xaxis: {
+                categories: data.labels,
+                labels: {
+                    style: { colors: colors.text, fontSize: '12px' },
+                    rotate: -45,
+                    rotateAlways: true
+                },
+                axisBorder: { color: colors.grid }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '12px' }
+                },
+                title: {
+                    text: 'Número de Campos',
+                    style: { color: colors.text, fontSize: '13px', fontWeight: 600 }
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4,
+                xaxis: { lines: { show: false } },
+                yaxis: { lines: { show: true } }
+            },
+            legend: {
+                position: 'bottom',
+                labels: { colors: colors.text, fontSize: '13px' },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 10, vertical: 5 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: (val) => val + ' campos'
+                }
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        
+        // Guardar referencia del chart
+        container._chartInstance = chart;
+        
+        console.log('Fráfico de Categorías renderizado');
+    }
+
+    // ==================== TIMELINE DE ACTIVIDAD ====================
+    function initTimelineChart(data, colors, isDark) {
+        const container = document.getElementById('timelineChart');
+        if (!container) return;
+
+        // Filtrar fechas inválidas (1969-12-31 indica timestamp 0 o null)
+        const validIndices = data.fechas
+            .map((fecha, index) => {
+                const date = new Date(fecha);
+                const year = date.getFullYear();
+                // Filtrar fechas anteriores a 1970 (timestamps inválidos)
+                return year >= 1970 ? index : -1;
+            })
+            .filter(index => index !== -1);
+
+        // Si no hay datos válidos, no renderizar
+        if (validIndices.length === 0) {
+            container.innerHTML = '<div class="flex flex-col items-center justify-center py-16"><svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg><p class="text-gray-500 dark:text-gray-400 font-medium">Sin actividad en los últimos 30 días</p></div>';
+            return;
+        }
+
+        // Filtrar todos los arrays usando los índices válidos
+        const fechasFiltradas = validIndices.map(i => data.fechas[i]);
+        const aprobacionesFiltradas = validIndices.map(i => data.aprobaciones[i]);
+        const asignacionesFiltradas = validIndices.map(i => data.asignaciones[i]);
+        const actualizacionesFiltradas = validIndices.map(i => data.actualizaciones[i]);
+        const totalFiltrado = validIndices.map(i => data.total[i]);
+
+        const options = {
+            series: [
+                { name: 'Aprobaciones', data: aprobacionesFiltradas, type: 'column' },
+                { name: 'Asignaciones', data: asignacionesFiltradas, type: 'column' },
+                { name: 'Actualizaciones', data: actualizacionesFiltradas, type: 'column' },
+                { name: 'Total', data: totalFiltrado, type: 'line' }
+            ],
+            chart: {
+                height: 350,
+                background: colors.background,
+                toolbar: {
+                    show: true,
+                    tools: { download: true, selection: false, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true }
+                },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    borderRadius: 6,
+                    columnWidth: '60%',
+                    borderRadiusApplication: 'end'
+                }
+            },
+            colors: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'],
+            stroke: {
+                width: [0, 0, 0, 3],
+                curve: 'smooth'
+            },
+            dataLabels: { enabled: false },
+                        xaxis: {
+                type: 'datetime',
+                categories: fechasFiltradas,
+                labels: {
+                    style: { colors: colors.text, fontSize: '12px', fontWeight: 500 },
+                    rotate: -45,
+                    rotateAlways: false,
+                    datetimeUTC: false,
+                    datetimeFormatter: {
+                        year: 'yyyy',
+                        month: 'MMM yyyy',
+                        day: 'dd MMM',
+                        hour: 'HH:mm'
+                    }
+                },
+                axisBorder: { color: colors.grid },
+                tickAmount: 10
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '12px' }
+                },
+                title: {
+                    text: 'Cantidad de Eventos',
+                    style: { color: colors.text, fontSize: '13px', fontWeight: 600 }
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                labels: { colors: colors.text, fontSize: '13px' },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 15, vertical: 5 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                shared: true,
+                intersect: false,
+                x: {
+                    format: 'dd MMM yyyy'
+                }
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        
+        // Guardar referencia del chart para actualización dinámica
+        container._chartInstance = chart;
+        
+        console.log('Timeline renderizado');
+    }
+
+    // ==================== TOP CAMPOS MÁS USADOS ====================
+    function initTopCamposChart(data, colors, isDark) {
+        const container = document.getElementById('topCamposChart');
+        if (!container) return;
+
+        const options = {
+            series: [
+                { name: 'Total Asignaciones', data: data.total },
+                { name: 'Completadas', data: data.completadas },
+                { name: 'Aprobadas', data: data.aprobadas }
+            ],
+            chart: {
+                type: 'bar',
+                height: 600,
+                background: colors.background,
+                toolbar: { 
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '75%',
+                    borderRadius: 8
+                }
+            },
+            colors: ['#6366F1', '#10B981', '#3B82F6'],
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'], fontSize: '12px', fontWeight: 600 },
+                formatter: (val) => val > 0 ? val : ''
+            },
+            xaxis: {
+                categories: data.nombres,
+                labels: {
+                    style: { colors: colors.text, fontSize: '13px' }
+                },
+                axisBorder: { color: colors.grid },
+                title: {
+                    text: 'Cantidad',
+                    style: { color: colors.text, fontSize: '14px', fontWeight: 600 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '13px', fontWeight: 500 },
+                    maxWidth: 200
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4,
+                xaxis: { lines: { show: true } },
+                yaxis: { lines: { show: false } }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                labels: { colors: colors.text, fontSize: '14px' },
+                markers: { width: 14, height: 14, radius: 4 },
+                itemMargin: { horizontal: 15, vertical: 8 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                shared: true,
+                intersect: false,
+                style: {
+                    fontSize: '13px'
+                }
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        
+        // Guardar referencia del chart
+        container._chartInstance = chart;
+        
+        console.log('Top Campos renderizado');
+    }
+
+    // ==================== DISTRIBUCIÓN POR ARCHIVO BIB ====================
+    function initArchivosChart(data, colors, isDark) {
+        const container = document.getElementById('archivosChart');
+        if (!container) return;
+
+        const options = {
+            series: [
+                { name: 'Aprobados', data: data.aprobados },
+                { name: 'En Proceso', data: data.enProceso },
+                { name: 'Pendientes', data: data.pendientes }
+            ],
+            chart: {
+                type: 'bar',
+                height: 400,
+                stacked: true,
+                stackType: '100%',
+                background: colors.background,
+                toolbar: { show: false },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '75%',
+                    borderRadius: 6
+                }
+            },
+            colors: ['#10B981', '#8B5CF6', '#F59E0B'],
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'], fontSize: '11px', fontWeight: 600 },
+                formatter: function(val) {
+                    return val > 0 ? val.toFixed(0) + '%' : '';
+                }
+            },
+            xaxis: {
+                categories: data.nombres,
+                labels: {
+                    style: { colors: colors.text, fontSize: '12px' },
+                    formatter: (val) => val + '%'
+                },
+                axisBorder: { color: colors.grid }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '11px' },
+                    maxWidth: 150
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4,
+                xaxis: { lines: { show: true } },
+                yaxis: { lines: { show: false } }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                labels: { colors: colors.text, fontSize: '13px' },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 10, vertical: 5 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                y: {
+                    formatter: function(val, { seriesIndex, dataPointIndex, w }) {
+                        const total = data.total[dataPointIndex];
+                        const cantidad = seriesIndex === 0 ? data.aprobados[dataPointIndex] :
+                                       seriesIndex === 1 ? data.enProceso[dataPointIndex] :
+                                       data.pendientes[dataPointIndex];
+                        const realVal = (cantidad * total) / 100;
+                        return Math.round(realVal) + ' artículos (' + val.toFixed(1) + '%)';
+                    }
+                }
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        
+        // Guardar referencia del chart
+        container._chartInstance = chart;
+        
+        console.log('✅ Archivos BIB renderizado');
+    }
+})();
+</script>
+
+{% endblock %}

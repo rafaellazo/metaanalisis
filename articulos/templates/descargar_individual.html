@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Descargar artículos - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+        <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6" aria-label="Breadcrumb">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Descargar artículos</span>
+    </nav>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+
+        <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">Descargar Artículos - Selección</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Selecciona los artículos que deseas descargar como archivos Excel.</p>
+        </div>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">Volver</a>
+    </div>
+
+    <form method="get" class="mb-6">
+        <div class="flex gap-2">
+            <input
+                type="text"
+                name="q"
+                value="{{ q }}"
+                placeholder="Buscar por título, autor o bibtex key..."
+                class="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+            <select name="estado" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Todos los estados</option>
+                <option value="PENDIENTE" {% if estado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+                <option value="EN_PROCESO" {% if estado == 'EN_PROCESO' %}selected{% endif %}>En Proceso</option>
+                <option value="EN_REVISION" {% if estado == 'EN_REVISION' %}selected{% endif %}>En Revisión</option>
+                <option value="APROBADO" {% if estado == 'APROBADO' %}selected{% endif %}>Aprobado</option>
+            </select>
+            <button class="px-4 py-2 bg-primary hover:bg-primary-dark dark:bg-primary-neon dark:hover:bg-primary text-white rounded-lg">Filtrar</button>
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'articulos:seleccionar_descarga' proyecto.id %}" data-download="zip" data-hide-global-loader="true">
+        {% csrf_token %}
+        <div class="p-4">
+            <div class="grid gap-2">
+                {% for articulo in articulos %}
+                <label class="flex items-center gap-3 p-2 border rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                    <input class="form-checkbox h-4 w-4 text-primary dark:text-primary-neon" type="checkbox" name="articulo_ids" value="{{ articulo.id }}">
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900 dark:text-white">{{ articulo.titulo }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ articulo.bibtex_key }} • {{ articulo.get_estado_display }}</div>
+                    </div>
+                    <div class="text-sm text-gray-400 dark:text-gray-300">{{ articulo.fecha_carga|date:"d M Y" }}</div>
+                </label>
+                {% empty %}
+                <div class="p-6 text-gray-500">No se encontraron artículos.</div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 flex items-center justify-end gap-2">
+                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">Cancelar</a>
+                <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Descargar seleccionados (ZIP)</button>
+            </div>
+        </div>
+    </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

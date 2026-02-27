@@ -1,0 +1,826 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Progreso - {{ proyecto.nombre }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progreso_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon transition-colors">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon transition-colors">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Mi Progreso</span>
+    </nav>
+
+    <!-- Header Compacto -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mi Progreso</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ proyecto.nombre }}</p>
+                </div>
+            </div>
+            <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all text-sm font-medium">
+                ← Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Compactos -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_articulos }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Total Artículos</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ articulos_aprobados }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Aprobados</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ articulos_en_revision }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">En Revisión</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-2">
+                <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ articulos_pendientes|add:articulos_en_proceso }}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Pendientes</p>
+        </div>
+    </div>
+
+    <!-- Forest Plot Principal -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Forest Plot - Progreso por Artículo</h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Análisis detallado de campos completados vs pendientes</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 flex-wrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Completados
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        Aprobados
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                        Pendientes
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            {% if forest_plot_data %}
+                <div id="forestPlotChart" style="min-height: 600px;"></div>
+            {% else %}
+                <div class="flex flex-col items-center justify-center py-16">
+                    <svg class="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400 font-medium">No hay artículos asignados</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Gráficos Secundarios -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Campos por Categoría -->
+        {% if chart_data.categorias %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                    </svg>
+                    Campos por Categoría
+                </h3>
+            </div>
+            <div class="p-6">
+                <div id="categoriasChart" style="height: 300px;"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resumen de Estados -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                    </svg>
+                    Estados de Artículos
+                </h3>
+            </div>
+            <div class="p-6">
+                <div id="estadosChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Campos Más Usados -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Top 10 Campos Más Usados</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Campos con mayor frecuencia en tus artículos</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div id="topCamposChart" style="height: 450px;"></div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Correcciones Pendientes -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-yellow-200 dark:border-yellow-700">
+            <div class="p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-b border-yellow-200 dark:border-yellow-700">
+                <h3 class="text-lg font-bold text-yellow-900 dark:text-yellow-100 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    Requieren Atención ({{ articulos_con_correcciones|length }})
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if articulos_con_correcciones %}
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        {% for articulo in articulos_con_correcciones %}
+                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-all border border-yellow-200 dark:border-yellow-700">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ articulo.titulo|truncatechars:50 }}</h4>
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded-full">
+                                        Corrección solicitada
+                                    </span>
+                                </div>
+                                <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center py-8">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">¡Sin correcciones pendientes!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Listos para Enviar -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-green-200 dark:border-green-700">
+            <div class="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-b border-green-200 dark:border-green-700">
+                <h3 class="text-lg font-bold text-green-900 dark:text-green-100 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Listos para Enviar ({{ articulos_listos_revision|length }})
+                </h3>
+            </div>
+            <div class="p-6">
+                {% if articulos_listos_revision %}
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        {% for articulo in articulos_listos_revision %}
+                        <a href="{% url 'articulos:workspace_articulo' articulo.id %}" class="block p-3 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-all border border-green-200 dark:border-green-700">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">{{ articulo.titulo|truncatechars:50 }}</h4>
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
+                                        100% Completado
+                                    </span>
+                                </div>
+                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center py-8">
+                        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">No hay artículos listos</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+
+<!-- Script con datos del template -->
+<script id="chart-data" type="application/json">
+{
+    "forestPlot": {
+        "articulos": {{ chart_data.forest_plot.articulos|safe }},
+        "completados": {{ chart_data.forest_plot.completados|safe }},
+        "aprobados": {{ chart_data.forest_plot.aprobados|safe }},
+        "pendientes": {{ chart_data.forest_plot.pendientes|safe }},
+        "totalCampos": {{ chart_data.forest_plot.total_campos|safe }},
+        "titulosCompletos": {{ chart_data.forest_plot.titulos_completos|safe }},
+        "estados": {{ chart_data.forest_plot.estados|safe }}
+    },
+    "categorias": {
+        "labels": {{ chart_data.categorias.labels|safe }},
+        "completados": {{ chart_data.categorias.completados|safe }},
+        "pendientes": {{ chart_data.categorias.pendientes|safe }},
+        "aprobados": {{ chart_data.categorias.aprobados|safe }}
+    },
+    "topCampos": {
+        "nombres": {{ chart_data.top_campos.nombres|safe }},
+        "total": {{ chart_data.top_campos.total|safe }},
+        "completadas": {{ chart_data.top_campos.completadas|safe }},
+        "aprobadas": {{ chart_data.top_campos.aprobadas|safe }},
+        "tasa": {{ chart_data.top_campos.tasa_completado|safe }}
+    },
+    "resumen": {
+        "labels": {{ chart_data.resumen.estados_labels|safe }},
+        "data": {{ chart_data.resumen.estados_data|safe }}
+    },
+    "hasForestPlot": {{ forest_plot_data|yesno:"true,false" }},
+    "hasCategorias": {{ chart_data.categorias.labels|yesno:"true,false" }},
+    "hasTopCampos": {{ mis_campos_mas_usados|yesno:"true,false" }}
+}
+</script>
+
+<!-- Script de inicialización completo -->
+<script>
+(function() {
+    'use strict';
+
+    let chartsInstances = {
+        forestPlot: null,
+        categorias: null,
+        estados: null,
+        topCampos: null
+    };
+
+    function waitForApexCharts(callback, maxAttempts = 10) {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            if (typeof ApexCharts !== 'undefined') {
+                clearInterval(interval);
+                console.log('✅ ApexCharts cargado');
+                callback();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error('❌ ApexCharts no se cargó después de', maxAttempts, 'intentos');
+            }
+        }, 100);
+    }
+
+    function observeThemeChanges() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    console.log('🎨 Cambio de tema detectado, actualizando gráficos...');
+                    setTimeout(() => {
+                        destroyAllCharts();
+                        init();
+                    }, 100);
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+
+    function destroyAllCharts() {
+        Object.keys(chartsInstances).forEach(key => {
+            if (chartsInstances[key]) {
+                try {
+                    chartsInstances[key].destroy();
+                } catch (e) {
+                    console.warn(`No se pudo destruir ${key}:`, e);
+                }
+                chartsInstances[key] = null;
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            waitForApexCharts(() => {
+                init();
+                observeThemeChanges();
+            });
+        });
+    } else {
+        waitForApexCharts(() => {
+            init();
+            observeThemeChanges();
+        });
+    }
+
+    function init() {
+        console.log('🚀 Inicializando Dashboard...');
+        
+        const chartDataElement = document.getElementById('chart-data');
+        if (!chartDataElement) {
+            console.error('❌ No se encontró el elemento chart-data');
+            return;
+        }
+
+        let chartData;
+        try {
+            chartData = JSON.parse(chartDataElement.textContent);
+            console.log('📊 Datos cargados:', chartData);
+        } catch (e) {
+            console.error('❌ Error parseando JSON:', e);
+            return;
+        }
+
+        const isDark = document.documentElement.classList.contains('dark');
+        const colors = getThemeColors(isDark);
+
+        if (chartData.hasForestPlot && chartData.forestPlot.articulos.length > 0) {
+            console.log('📈 Inicializando Forest Plot...');
+            chartsInstances.forestPlot = initForestPlot(chartData.forestPlot, colors, isDark);
+        } else {
+            console.log('⚠️ No hay datos para Forest Plot');
+        }
+
+        if (chartData.hasCategorias && chartData.categorias.labels.length > 0) {
+            console.log('📊 Inicializando gráfico de Categorías...');
+            chartsInstances.categorias = initCategoriasChart(chartData.categorias, colors, isDark);
+        } else {
+            console.log('⚠️ No hay datos para Categorías');
+        }
+
+        console.log('🥧 Inicializando gráfico de Estados...');
+        chartsInstances.estados = initEstadosChart(chartData.resumen, colors, isDark);
+        
+        if (chartData.hasTopCampos && chartData.topCampos.nombres.length > 0) {
+            console.log('📊 Inicializando Top Campos...');
+            chartsInstances.topCampos = initTopCamposChart(chartData.topCampos, colors, isDark);
+        } else {
+            console.log('⚠️ No hay datos para Top Campos');
+        }
+    }
+
+    function getThemeColors(isDark) {
+        return {
+            text: isDark ? '#D1D5DB' : '#374151',
+            grid: isDark ? '#374151' : '#E5E7EB',
+            background: isDark ? '#1F2937' : '#FFFFFF',
+            completado: '#10B981',
+            aprobado: '#3B82F6',
+            pendiente: '#EF4444'
+        };
+    }
+
+    function initForestPlot(data, colors, isDark) {
+        const container = document.getElementById('forestPlotChart');
+        if (!container) {
+            console.error('❌ No se encontró el contenedor forestPlotChart');
+            return null;
+        }
+
+        const options = {
+            series: [
+                { name: 'Completados', data: data.completados },
+                { name: 'Aprobados', data: data.aprobados },
+                { name: 'Pendientes', data: data.pendientes }
+            ],
+            chart: {
+                type: 'bar',
+                height: 600,
+                stacked: true,
+                background: colors.background,
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '70%',
+                    dataLabels: { position: 'center' }
+                }
+            },
+            colors: [colors.completado, colors.aprobado, colors.pendiente],
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'], fontSize: '11px', fontWeight: 600 },
+                formatter: (val) => val > 0 ? val : ''
+            },
+            xaxis: {
+                categories: data.articulos,
+                labels: { style: { colors: colors.text, fontSize: '12px' } },
+                axisBorder: { color: colors.grid },
+                title: {
+                    text: 'Número de Campos',
+                    style: { color: colors.text, fontSize: '13px', fontWeight: 600 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '11px' },
+                    maxWidth: 180
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4,
+                xaxis: { lines: { show: true } },
+                yaxis: { lines: { show: false } }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                labels: { colors: colors.text },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 15, vertical: 5 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                shared: true,
+                intersect: false,
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                    const titulo = data.titulosCompletos[dataPointIndex];
+                    const estado = data.estados[dataPointIndex];
+                    const completados = series[0][dataPointIndex];
+                    const aprobados = series[1][dataPointIndex];
+                    const pendientes = series[2][dataPointIndex];
+                    const total = completados + aprobados + pendientes;
+                    const progreso = total > 0 ? ((completados / total) * 100).toFixed(1) : 0;
+                    
+                    return '<div class="px-4 py-3 text-sm">' +
+                        '<div class="font-semibold mb-2 text-gray-900 dark:text-white max-w-xs">' + titulo + '</div>' +
+                        '<div class="space-y-1 text-xs">' +
+                        '<div class="flex justify-between items-center gap-3"><span>Estado:</span><strong>' + estado + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span>Total campos:</span><strong>' + total + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span class="text-green-600">✓ Completados:</span><strong class="text-green-600">' + completados + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span class="text-blue-600">★ Aprobados:</span><strong class="text-blue-600">' + aprobados + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span class="text-red-600">⏱ Pendientes:</span><strong class="text-red-600">' + pendientes + '</strong></div>' +
+                        '<div class="border-t border-gray-200 mt-2 pt-2"><div class="flex justify-between items-center gap-3"><span>Progreso:</span><strong class="text-indigo-600">' + progreso + '%</strong></div></div>' +
+                        '</div></div>';
+                }
+            },
+            responsive: [{
+                breakpoint: 768,
+                options: {
+                    chart: { height: 800 },
+                    plotOptions: { bar: { barHeight: '60%' } },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        console.log('✅ Forest Plot renderizado');
+        return chart;
+    }
+
+    function initCategoriasChart(data, colors, isDark) {
+        const container = document.getElementById('categoriasChart');
+        if (!container) {
+            console.error('❌ No se encontró el contenedor categoriasChart');
+            return null;
+        }
+
+        const options = {
+            series: [
+                { name: 'Completados', data: data.completados },
+                { name: 'Aprobados', data: data.aprobados },
+                { name: 'Pendientes', data: data.pendientes }
+            ],
+            chart: {
+                type: 'bar',
+                height: 300,
+                stacked: true,
+                background: colors.background,
+                toolbar: { show: false },
+                fontFamily: 'Inter, system-ui, sans-serif'
+            },
+            plotOptions: {
+                bar: { horizontal: false, borderRadius: 6, columnWidth: '60%' }
+            },
+            colors: [colors.completado, colors.aprobado, colors.pendiente],
+            dataLabels: { enabled: false },
+            xaxis: {
+                categories: data.labels,
+                labels: {
+                    style: { colors: colors.text, fontSize: '11px' },
+                    rotate: -45,
+                    rotateAlways: true
+                }
+            },
+            yaxis: {
+                labels: { style: { colors: colors.text } },
+                title: {
+                    text: 'Número de Campos',
+                    style: { color: colors.text, fontSize: '12px', fontWeight: 600 }
+                }
+            },
+            grid: { borderColor: colors.grid, strokeDashArray: 4 },
+            legend: {
+                position: 'bottom',
+                labels: { colors: colors.text },
+                markers: { width: 10, height: 10, radius: 3 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                y: { formatter: (val) => val + ' campos' }
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        console.log('✅ Categorías renderizado');
+        return chart;
+    }
+
+    function initEstadosChart(data, colors, isDark) {
+        const container = document.getElementById('estadosChart');
+        if (!container) {
+            console.error('❌ No se encontró el contenedor estadosChart');
+            return null;
+        }
+
+        const options = {
+            series: data.data,
+            chart: {
+                type: 'donut',
+                height: 300,
+                background: colors.background,
+                fontFamily: 'Inter, system-ui, sans-serif'
+            },
+            labels: data.labels,
+            colors: ['#F59E0B', '#3B82F6', '#8B5CF6', '#10B981', '#6366F1'],
+            legend: {
+                position: 'bottom',
+                labels: { colors: colors.text },
+                markers: { width: 10, height: 10, radius: 3 }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '65%',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: colors.text
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '24px',
+                                fontWeight: 'bold',
+                                color: colors.text
+                            },
+                            total: {
+                                show: true,
+                                label: 'Total',
+                                fontSize: '14px',
+                                color: colors.text,
+                                formatter: (w) => w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                            }
+                        }
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                style: { fontSize: '12px', fontWeight: 600 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                y: {
+                    formatter: function(val, { w }) {
+                        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                        const percent = ((val / total) * 100).toFixed(1);
+                        return val + ' (' + percent + '%)';
+                    }
+                }
+            },
+            stroke: {
+                width: 2,
+                colors: [isDark ? '#1F2937' : '#FFFFFF']
+            }
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        console.log('Estados renderizado');
+        return chart;
+    }
+
+    function initTopCamposChart(data, colors, isDark) {
+        const container = document.getElementById('topCamposChart');
+        if (!container) {
+            console.error('❌ No se encontró el contenedor topCamposChart');
+            return null;
+        }
+
+        const options = {
+            series: [
+                { name: 'Total Asignaciones', data: data.total },
+                { name: 'Completadas', data: data.completadas },
+                { name: 'Aprobadas', data: data.aprobadas }
+            ],
+            chart: {
+                type: 'bar',
+                height: 450,
+                background: colors.background,
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                },
+                fontFamily: 'Inter, system-ui, sans-serif',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '75%',
+                    dataLabels: { position: 'center' }
+                }
+            },
+            colors: ['#8B5CF6', colors.completado, colors.aprobado],
+            dataLabels: {
+                enabled: true,
+                style: { colors: ['#fff'], fontSize: '11px', fontWeight: 600 },
+                formatter: (val) => val > 0 ? val : ''
+            },
+            xaxis: {
+                categories: data.nombres,
+                labels: { style: { colors: colors.text, fontSize: '12px' } },
+                axisBorder: { color: colors.grid },
+                title: {
+                    text: 'Frecuencia de Uso',
+                    style: { color: colors.text, fontSize: '13px', fontWeight: 600 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: colors.text, fontSize: '11px' },
+                    maxWidth: 200
+                }
+            },
+            grid: {
+                borderColor: colors.grid,
+                strokeDashArray: 4,
+                xaxis: { lines: { show: true } },
+                yaxis: { lines: { show: false } }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                labels: { colors: colors.text },
+                markers: { width: 12, height: 12, radius: 3 },
+                itemMargin: { horizontal: 15, vertical: 5 }
+            },
+            tooltip: {
+                theme: isDark ? 'dark' : 'light',
+                shared: true,
+                intersect: false,
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                    const campo = data.nombres[dataPointIndex];
+                    const total = series[0][dataPointIndex];
+                    const completadas = series[1][dataPointIndex];
+                    const aprobadas = series[2][dataPointIndex];
+                    const tasa = data.tasa[dataPointIndex];
+                    
+                    return '<div class="px-4 py-3 text-sm">' +
+                        '<div class="font-semibold mb-2 text-gray-900 dark:text-white">' + campo + '</div>' +
+                        '<div class="space-y-1 text-xs">' +
+                        '<div class="flex justify-between items-center gap-3"><span>Total asignaciones:</span><strong>' + total + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span class="text-green-600">Completadas:</span><strong class="text-green-600">' + completadas + '</strong></div>' +
+                        '<div class="flex justify-between items-center gap-3"><span class="text-blue-600">Aprobadas:</span><strong class="text-blue-600">' + aprobadas + '</strong></div>' +
+                        '<div class="border-t border-gray-200 mt-2 pt-2"><div class="flex justify-between items-center gap-3"><span>Tasa de completado:</span><strong class="text-purple-600">' + tasa + '%</strong></div></div>' +
+                        '</div></div>';
+                }
+            },
+            responsive: [{
+                breakpoint: 768,
+                options: {
+                    chart: { height: 550 },
+                    plotOptions: { bar: { barHeight: '65%' } },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        };
+
+        const chart = new ApexCharts(container, options);
+        chart.render();
+        console.log('Top Campos renderizado');
+        return chart;
+    }
+
+})();
+</script>
+{% endblock %}

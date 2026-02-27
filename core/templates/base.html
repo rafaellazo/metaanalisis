@@ -1,0 +1,1707 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/cabeza.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/cabeza.png' %}">
+    <title>{% block title %}Mi Proyecto de Metaanálisis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: '#FF896C',
+                        'primary-dark': '#FF5722',
+                        'primary-neon': '#FF6B35',
+                        'sidebar-bg': '#FF896C',
+                        'sidebar-dark': '#FF5722',
+                        'bg-main': '#ffffff',
+                        'bg-main-dark': '#1a1a1a',
+                        'text-main': '#333333',
+                        'text-main-dark': '#ffffff'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        * {
+            transition: all 0.3s ease;
+        }
+        
+        /* ============================================
+           SISTEMA DE LOADER PERSONALIZADO
+           ============================================ */
+        
+        #pageLoader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .dark #pageLoader {
+            background: rgba(26, 26, 26, 0.75);
+        }
+
+        #pageLoader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Animación del spinner principal */
+        .loader-spinner {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .loader-circle {
+            position: absolute;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        }
+
+        .loader-circle:nth-child(1) {
+            width: 100%;
+            height: 100%;
+            border-top-color: #FF896C;
+            border-right-color: rgba(255, 137, 108, 0.2);
+            box-shadow: 0 0 15px rgba(255, 137, 108, 0.3);
+        }
+
+        .loader-circle:nth-child(2) {
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            border-top-color: #FF5722;
+            border-right-color: rgba(255, 87, 34, 0.2);
+            animation-delay: -0.5s;
+            box-shadow: 0 0 12px rgba(255, 87, 34, 0.3);
+        }
+
+        .loader-circle:nth-child(3) {
+            width: 40%;
+            height: 40%;
+            top: 30%;
+            left: 30%;
+            border-top-color: #FF6B35;
+            border-right-color: rgba(255, 107, 53, 0.2);
+            animation-delay: -1s;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .dark .loader-circle:nth-child(1) {
+            border-top-color: #FF6B35;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .dark .loader-circle:nth-child(2) {
+            border-top-color: #FF4500;
+            box-shadow: 0 0 15px rgba(255, 69, 0, 0.5);
+        }
+
+        .dark .loader-circle:nth-child(3) {
+            border-top-color: #FF896C;
+            box-shadow: 0 0 12px rgba(255, 137, 108, 0.5);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Texto del loader */
+        .loader-text {
+            color: #333333;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        .dark .loader-text {
+            color: #ffffff;
+        }
+
+        .loader-subtext {
+            color: #666666;
+            font-size: 0.875rem;
+            text-align: center;
+            max-width: 400px;
+            padding: 0 2rem;
+        }
+
+        .dark .loader-subtext {
+            color: #cccccc;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Barra de progreso */
+        .loader-progress-container {
+            width: 280px;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+
+        .dark .loader-progress-container {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .loader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF896C, #FF5722, #FF6B35);
+            width: 0%;
+            animation: progress 2.5s ease-in-out infinite;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 137, 108, 0.5);
+            position: relative;
+        }
+
+        .dark .loader-progress-bar {
+            background: linear-gradient(90deg, #FF6B35, #FF4500, #FF896C);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.7);
+        }
+
+        .loader-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 1.2s infinite;
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0%;
+            }
+            50% {
+                width: 70%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Logo animado */
+        .loader-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1.5rem;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 12px rgba(255, 137, 108, 0.4));
+        }
+
+        .dark .loader-logo {
+            filter: drop-shadow(0 4px 15px rgba(255, 107, 53, 0.6));
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-15px) scale(1.05);
+            }
+        }
+
+        /* ============================================
+           ESTILOS EXISTENTES
+           ============================================ */
+        
+        .sidebar-hidden {
+            transform: translateX(-100%) !important;
+        }
+
+        .main-fullwidth {
+            margin-left: 0 !important;
+        }
+
+        .sidebar, #mainContent {
+            transition: all 300ms ease-in-out;
+        }
+
+        @media (max-width: 1024px) {
+            .main-fullwidth {
+                margin-left: 0 !important;
+            }
+        }
+        
+        /* BOTONES PRIMARIOS */
+        .btn-primary {
+            background: linear-gradient(135deg, #FF896C, #FF5722);
+            box-shadow: 0 4px 15px rgba(255, 137, 108, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #FF5722, #E64A19);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 137, 108, 0.4);
+        }
+        
+        .dark .btn-primary {
+            background: linear-gradient(135deg, #FF6B35, #FF4500);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .dark .btn-primary:hover {
+            background: linear-gradient(135deg, #FF4500, #D43F00);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.6);
+        }
+        
+        .dark .sidebar {
+            box-shadow: 4px 0 20px rgba(255, 107, 53, 0.3);
+        }
+
+        /* MENÚ SIDEBAR */
+        .sidebar nav a {
+            transition: all 0.2s ease;
+        }
+
+        .sidebar nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .sidebar nav a.bg-white.bg-opacity-20 {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .menu-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .menu-section:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .menu-section-title {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* HOVER PARA ENLACES CON CLASES ESPECÍFICAS */
+        a.hover\:text-primary:hover {
+            color: #FF896C !important;
+        }
+
+        .dark a.hover\:text-primary-neon:hover {
+            color: #FF6B35 !important;
+        }
+
+        a.hover\:text-primary-dark:hover {
+            color: #FF5722 !important;
+        }
+
+        .dark a.hover\:text-primary:hover {
+            color: #FF896C !important;
+        }
+
+        /* BOTONES SECUNDARIOS CON HOVER ESPECÍFICO */
+        button.bg-white.hover\:bg-gray-50:hover,
+        .bg-white.hover\:bg-gray-50:hover {
+            background-color: rgb(249, 250, 251) !important;
+        }
+
+        button.bg-white.hover\:bg-gray-100:hover,
+        .bg-white.hover\:bg-gray-100:hover {
+            background-color: rgb(243, 244, 246) !important;
+        }
+
+        .dark button.bg-white.hover\:bg-gray-50:hover,
+        .dark .bg-white.hover\:bg-gray-50:hover,
+        .dark button.bg-white.hover\:bg-gray-100:hover,
+        .dark .bg-white.hover\:bg-gray-100:hover {
+            background-color: rgb(55, 65, 81) !important;
+        }
+
+        .dark .dark\:bg-gray-800.dark\:hover\:bg-gray-700:hover {
+            background-color: rgb(55, 65, 81) !important;
+        }
+
+        /* TOGGLES Y BOTONES DE ICONO */
+        button.bg-gray-100.hover\:bg-gray-200:hover,
+        .bg-gray-100.hover\:bg-gray-200:hover {
+            background-color: rgb(229, 231, 235) !important;
+        }
+
+        .dark button.dark\:bg-gray-700.dark\:hover\:bg-gray-600:hover,
+        .dark .dark\:bg-gray-700.dark\:hover\:bg-gray-600:hover {
+            background-color: rgb(75, 85, 99) !important;
+        }
+
+        /* CARDS CON HOVER */
+        .hover\:shadow-xl:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .dark .hover\:shadow-xl:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .hover\:border-primary:hover {
+            border-color: #FF896C !important;
+        }
+
+        .dark .hover\:border-primary-neon:hover,
+        .dark .dark\:hover\:border-primary-neon:hover {
+            border-color: #FF6B35 !important;
+        }
+
+        /* DROPDOWNS */
+        [class*="hover:bg-gray-100"]:hover {
+            background-color: rgb(243, 244, 246) !important;
+        }
+
+        .dark [class*="hover:bg-gray-700"]:hover,
+        .dark [class*="dark:hover:bg-gray-700"]:hover {
+            background-color: rgb(55, 65, 81) !important;
+        }
+
+        [class*="hover:bg-gray-50"]:hover {
+            background-color: rgb(249, 250, 251) !important;
+        }
+
+        .dark [class*="hover:bg-gray-800"]:hover,
+        .dark [class*="dark:hover:bg-gray-800"]:hover {
+            background-color: rgb(31, 41, 55) !important;
+        }
+
+        /* HOVER EN TEXTO ROJO (CERRAR SESIÓN) */
+        .hover\:bg-red-50:hover {
+            background-color: rgb(254, 242, 242) !important;
+        }
+
+        .dark .dark\:hover\:bg-red-900:hover {
+            background-color: rgba(127, 29, 29, 0.2) !important;
+        }
+
+        /* Animación para mensajes */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-alert {
+            animation: slideInDown 0.4s ease-out;
+        }
+
+        .message-alert.fade-out {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Estilos mejorados para notificaciones */
+        #notificationsDropdown {
+            backdrop-filter: blur(10px);
+        }
+
+        .dark #notificationsDropdown {
+            background-color: rgba(31, 41, 55, 0.95);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification-item {
+            border-left-width: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(249, 250, 251, 0.8) !important;
+        }
+
+        .dark .notification-item:hover {
+            background-color: rgba(55, 65, 81, 0.6) !important;
+        }
+
+        .notification-item.unread {
+            background-color: rgba(255, 137, 108, 0.05);
+        }
+
+        .dark .notification-item.unread {
+            background-color: rgba(255, 107, 53, 0.1);
+        }
+
+        .notification-icon {
+            background: linear-gradient(135deg, rgba(255, 137, 108, 0.1), rgba(255, 87, 34, 0.1));
+        }
+
+        .dark .notification-icon {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 69, 0, 0.15));
+        }
+
+        /* Scrollbar personalizado */
+        #notificationsList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #notificationsList::-webkit-scrollbar-track {
+            background: rgba(243, 244, 246, 0.5);
+            border-radius: 3px;
+        }
+
+        .dark #notificationsList::-webkit-scrollbar-track {
+            background: rgba(55, 65, 81, 0.3);
+        }
+
+        #notificationsList::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+
+        .dark #notificationsList::-webkit-scrollbar-thumb {
+            background: rgba(107, 114, 128, 0.5);
+        }
+
+        #notificationsList::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.7);
+        }
+
+        .dark #notificationsList::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+
+        /* Badge de notificaciones con animación */
+        #notificationBadge {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .8;
+            }
+        }
+
+        /* Mejoras en el footer del dropdown */
+        .notification-footer {
+            background: linear-gradient(to top, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0.8));
+        }
+
+        .dark .notification-footer {
+            background: linear-gradient(to top, rgba(31, 41, 55, 1), rgba(31, 41, 55, 0.8));
+        }
+
+        /* Header del dropdown */
+        .notification-header {
+            background: linear-gradient(to bottom, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0.8));
+        }
+
+        .dark .notification-header {
+            background: linear-gradient(to bottom, rgba(31, 41, 55, 1), rgba(31, 41, 55, 0.8));
+        }
+
+        /* INPUTS Y SELECTS - SOLO FOCUS */
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none !important;
+            border-color: #FF896C !important;
+            box-shadow: 0 0 0 3px rgba(255, 137, 108, 0.1) !important;
+        }
+
+        .dark input[type="text"]:focus,
+        .dark input[type="email"]:focus,
+        .dark input[type="password"]:focus,
+        .dark input[type="number"]:focus,
+        .dark select:focus,
+        .dark textarea:focus {
+            border-color: #FF6B35 !important;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15) !important;
+        }
+
+        /* REMOVER RING Y OUTLINE DEFAULT DE TAILWIND */
+        input:focus,
+        select:focus,
+        textarea:focus,
+        button:focus {
+            outline: none !important;
+        }
+
+        /* TRANSICIONES SUAVES SOLO PARA ELEMENTOS ESPECÍFICOS */
+        button, 
+        a[class*="hover"], 
+        [class*="hover:bg-"],
+        [class*="hover:text-"],
+        [class*="hover:border-"],
+        [class*="hover:shadow-"],
+        input, 
+        select, 
+        textarea,
+        .sidebar nav a,
+        .notification-item,
+        .btn-primary {
+            transition: all 0.2s ease;
+        }
+
+        /* CORRECCIÓN ESPECÍFICA PARA BOTONES CON GRADIENTE */
+        button[class*="gradient"], 
+        .bg-gradient-to-r {
+            transition: all 0.3s ease;
+        }
+
+        button[class*="gradient"]:hover, 
+        .bg-gradient-to-r:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-bg-main dark:bg-bg-main-dark text-text-main dark:text-text-main-dark min-h-screen">
+    <div id="pageLoader">
+        <img src="{% static 'img/hola3.png' %}" alt="PM Logo" class="loader-logo" 
+             onerror="this.style.display='none';">
+        
+        <div class="loader-spinner">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        
+        <h2 class="loader-text" id="loaderTitle">
+            {% block loader_title %}Cargando...{% endblock %}
+        </h2>
+        
+        <p class="loader-subtext" id="loaderMessage">
+            {% block loader_message %}Preparando tu experiencia{% endblock %}
+        </p>
+        
+        <div class="loader-progress-container">
+            <div class="loader-progress-bar"></div>
+        </div>
+    </div>
+    
+    {% block body_content %}
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar fixed left-0 top-0 h-full w-64 bg-primary dark:bg-primary-dark z-50 shadow-2xl transform -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out">
+            <div class="p-6 pt-20 h-full overflow-y-auto">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-center">
+                        <img src="{% static 'img/hola3.png' %}" alt="PM Logo" class="w-14 h-14 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-14 h-14 flex items-center justify-center text-white font-bold text-2xl" style="display: none;">
+                            PM
+                    </div>
+                        </div>
+                        <h2 class="text-lg font-bold text-white">Dashboard</h2>
+                    </div>
+                    <button id="closeSidebar" class="lg:hidden text-white hover:text-gray-200 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    
+                    <button id="collapseSidebar" class="hidden lg:block text-white hover:text-gray-200 transition-colors p-1 rounded-lg hover:bg-white hover:bg-opacity-10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <nav class="space-y-1">
+                    {% if user.is_authenticated %}
+                        {% if user.is_superuser or user.profile.role.name == 'administrador' %}
+                            <!-- MENÚ ADMINISTRADOR -->
+                            <div class="menu-section">
+                                <p class="menu-section-title">Panel Principal</p>
+                                <a href="{% url 'core:home' %}" class="flex items-center px-4 py-3 text-white {% if request.resolver_match.url_name == 'home' %}bg-white bg-opacity-20{% else %}hover:bg-white hover:bg-opacity-10{% endif %} rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    <span>Dashboard Admin</span>
+                                </a>
+                            </div>
+
+                            <div class="menu-section">
+                                <p class="menu-section-title">Gestión Global</p>
+                                <a href="{% url 'usuarios_list' %}" class="flex items-center px-4 py-3 text-white {% if request.resolver_match.url_name == 'usuarios_list' %}bg-white bg-opacity-20{% else %}hover:bg-white hover:bg-opacity-10{% endif %} rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                                    </svg>
+                                    <span>Usuarios</span>
+                                </a>
+                            </div>
+
+                            <div class="menu-section">
+                                <p class="menu-section-title">Proyectos</p>
+                                <a href="{% url 'buscar_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <span>Buscar Proyectos</span>
+                                </a>
+                                <a href="{% url 'crear_proyecto' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    <span>Crear Proyecto</span>
+                                </a>
+                                <a href="{% url 'mis_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Mis Proyectos</span>
+                                </a>
+                            </div>
+
+                        {% elif user.profile.role.name == 'investigador' %}
+                            <!-- MENÚ INVESTIGADOR -->
+                            <div class="menu-section">
+                                <p class="menu-section-title">Panel Principal</p>
+                                <a href="{% url 'core:home' %}" class="flex items-center px-4 py-3 text-white {% if request.resolver_match.url_name == 'home' %}bg-white bg-opacity-20{% else %}hover:bg-white hover:bg-opacity-10{% endif %} rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    <span>Dashboard</span>
+                                </a>
+                            </div>
+
+                            <div class="menu-section">
+                                <p class="menu-section-title">Proyectos</p>
+                                <a href="{% url 'buscar_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <span>Buscar Proyectos</span>
+                                </a>
+                                {% if can_create_projects %}
+                                <a href="{% url 'crear_proyecto' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    <span>Crear Proyecto</span>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'mis_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Mis Proyectos</span>
+                                </a>
+                            </div>
+
+                        {% else %}
+                            <!-- MENÚ INVITADO O OTROS ROLES -->
+                            <div class="menu-section">
+                                <p class="menu-section-title">Panel Principal</p>
+                                <a href="{% url 'core:home' %}" class="flex items-center px-4 py-3 text-white {% if request.resolver_match.url_name == 'home' %}bg-white bg-opacity-20{% else %}hover:bg-white hover:bg-opacity-10{% endif %} rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    <span>Inicio</span>
+                                </a>
+                            </div>
+
+                            <div class="menu-section">
+                                <p class="menu-section-title">Proyectos</p>
+                                <a href="{% url 'buscar_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <span>Buscar Proyectos</span>
+                                </a>
+                                {% if has_any_project_role %}
+                                <a href="{% url 'mis_proyectos' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Mis Proyectos</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                    {% else %}
+                        <!-- Menú para usuarios no autenticados -->
+                        <div class="menu-section">
+                            <a href="{% url 'core:home' %}" class="flex items-center px-4 py-3 text-white {% if request.resolver_match.url_name == 'home' %}bg-white bg-opacity-20{% else %}hover:bg-white hover:bg-opacity-10{% endif %} rounded-lg transition-all duration-200">
+                                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                <span>Inicio</span>
+                            </a>
+                        </div>
+                        
+                        <div class="menu-section">
+                            <p class="menu-section-title">Acceder</p>
+                            <a href="{% url 'login' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                </svg>
+                                <span>Iniciar Sesión</span>
+                            </a>
+                            <a href="{% url 'register' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                </svg>
+                                <span>Registrarse</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </nav>
+            </div>
+        </aside>
+
+        <button id="showSidebar" class="fixed top-24 left-4 z-30 p-3 bg-transparent border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 opacity-0 pointer-events-none lg:block hidden backdrop-blur-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+        </button>
+
+        <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+        <div class="flex-1 flex flex-col lg:ml-64 transition-all duration-300">
+            <header class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 relative z-20">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <button id="menuToggle" class="lg:hidden p-2 text-primary dark:text-primary-neon rounded-lg">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                            
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                    <img src="{% static 'img/hola.png' %}" alt="PM Logo" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="w-full h-full bg-primary dark:bg-primary-neon flex items-center justify-center text-white font-bold text-xs" style="display: none;">
+                                        PM
+                                    </div>
+                                </div>
+                                <h1 class="text-2xl font-bold text-primary dark:text-primary-neon tracking-wide">
+                                    PM
+                                </h1>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors">
+                                <svg id="sunIcon" class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                <svg id="moonIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- SISTEMA DE NOTIFICACIONES -->
+                            {% if user.is_authenticated %}
+                            <div class="relative">
+                                <button id="notificationsButton" class="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                    </svg>
+                                    <!-- Badge de notificaciones no leídas -->
+                                    <span id="notificationBadge" class="absolute top-0 right-0 hidden w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center transform translate-x-1 -translate-y-1">
+                                        0
+                                    </span>
+                                </button>
+
+                                <!-- Dropdown de Notificaciones -->
+                                <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 max-h-[32rem] overflow-hidden flex flex-col">
+                                    <!-- Header del Dropdown -->
+                                    <div class="notification-header px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
+                                        <button id="markAllAsRead" class="text-xs text-primary hover:text-primary-dark dark:text-primary-neon dark:hover:text-primary transition-colors font-medium">
+                                            Marcar todas como leídas
+                                        </button>
+                                    </div>
+
+                                    <!-- Lista de Notificaciones (con scroll) -->
+                                    <div id="notificationsList" class="overflow-y-auto flex-1" style="max-height: 400px;">
+                                        <!-- Notificaciones se cargarán aquí dinámicamente -->
+                                        <div id="noNotifications" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                            </svg>
+                                            <p class="text-sm">No tienes notificaciones nuevas</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer con link a ver todas -->
+                                    <div class="notification-footer px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                                        <a href="#" class="block text-center text-sm text-primary hover:text-primary-dark dark:text-primary-neon dark:hover:text-primary transition-colors font-medium">
+                                            Ver todas las notificaciones
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Template para notificación individual (oculto, se clonará con JS) -->
+                            <template id="notificationTemplate">
+                                <div class="notification-item px-4 py-3 cursor-pointer transition-all duration-200" data-notification-id="">
+                                    <div class="flex items-start space-x-3">
+                                        <!-- Icono dinámico según tipo -->
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center notification-icon">
+                                            <!-- SVG se insertará aquí -->
+                                        </div>
+                                        
+                                        <!-- Contenido -->
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white notification-title">
+                                                <!-- Título -->
+                                            </p>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 notification-message mt-1">
+                                                <!-- Mensaje -->
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 notification-time">
+                                                <!-- Tiempo -->
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- Indicador de no leída -->
+                                        <div class="flex-shrink-0">
+                                            <span class="notification-unread-dot w-2 h-2 bg-primary dark:bg-primary-neon rounded-full block"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {% if user.is_authenticated %}
+                                <div class="flex items-center space-x-3">
+                                    <span class="hidden sm:block text-sm font-medium text-gray-600 dark:text-gray-400">
+                                        {{ user.first_name|default:user.username }}
+                                    </span>
+                                    <div class="relative">
+                                        <button id="userMenuButton" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                                            </svg>
+                                        </button>
+                                        <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                                            <div class="py-2">
+                                                <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                                    {{ user.get_full_name|default:user.username }}
+                                                    {% if user.profile.role %}
+                                                        <div class="text-xs text-gray-400 dark:text-gray-500 capitalize">{{ user.profile.role.name }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                    <svg class="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                                                    </svg>
+                                                    Mi Perfil
+                                                </a>
+                                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    </svg>
+                                                    Configuración
+                                                </a>
+                                                <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                                <a href="{% url 'logout' %}" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:bg-opacity-20 transition-colors">
+                                                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                                    </svg>
+                                                    Cerrar Sesión
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center space-x-3">
+                                    <a href="{% url 'login' %}" class="px-4 py-2 text-primary dark:text-primary-neon font-medium hover:bg-primary hover:bg-opacity-10 rounded-lg transition-all duration-300">
+                                        Iniciar Sesión
+                                    </a>
+                                    <a href="{% url 'register' %}" class="btn-primary px-4 py-2 rounded-lg text-white font-medium hover:shadow-lg transition-all duration-300">
+                                        Registrarse
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <main id="mainContent" class="flex-1 p-6 bg-gray-50 dark:bg-gray-900 transition-all duration-300">
+                <!-- SISTEMA DE MENSAJES DE DJANGO -->
+                {% if messages %}
+                    <div class="mb-6 space-y-3" id="messagesContainer">
+                        {% for message in messages %}
+                            <div class="message-alert rounded-lg p-4 flex items-start space-x-3 shadow-lg
+                                {% if message.tags == 'error' or message.tags == 'danger' %}
+                                    bg-red-50 dark:bg-red-900 dark:bg-opacity-20 border border-red-200 dark:border-red-800
+                                {% elif message.tags == 'success' %}
+                                    bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border border-green-200 dark:border-green-800
+                                {% elif message.tags == 'warning' %}
+                                    bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-20 border border-yellow-200 dark:border-yellow-800
+                                {% else %}
+                                    bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border border-blue-200 dark:border-blue-800
+                                {% endif %}"
+                                data-message-id="{{ forloop.counter }}">
+                                
+                                <!-- Icono -->
+                                <div class="flex-shrink-0">
+                                    {% if message.tags == 'error' or message.tags == 'danger' %}
+                                        <svg class="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    {% elif message.tags == 'success' %}
+                                        <svg class="w-6 h-6 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    {% elif message.tags == 'warning' %}
+                                        <svg class="w-6 h-6 text-yellow-500 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="w-6 h-6 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Mensaje -->
+                                <div class="flex-1 text-sm font-medium
+                                    {% if message.tags == 'error' or message.tags == 'danger' %}
+                                        text-red-800 dark:text-red-200
+                                    {% elif message.tags == 'success' %}
+                                        text-green-800 dark:text-green-200
+                                    {% elif message.tags == 'warning' %}
+                                        text-yellow-800 dark:text-yellow-200
+                                    {% else %}
+                                        text-blue-800 dark:text-blue-200
+                                    {% endif %}">
+                                    {{ message }}
+                                </div>
+                                
+                                <!-- Botón cerrar -->
+                                <button onclick="closeMessage(this)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% endblock body_content %}
+    {% block extra_js %}
+    <script>
+        window.PageLoader = {
+            loader: null,
+            loaderTitle: null,
+            loaderMessage: null,
+            
+            init: function() {
+                this.loader = document.getElementById('pageLoader');
+                this.loaderTitle = document.getElementById('loaderTitle');
+                this.loaderMessage = document.getElementById('loaderMessage');
+            },
+            
+            show: function(title, message) {
+                if (this.loader) {
+                    if (title) this.loaderTitle.textContent = title;
+                    if (message) this.loaderMessage.textContent = message;
+                    this.loader.classList.remove('hidden');
+                }
+            },
+            
+            hide: function() {
+                if (this.loader) {
+                    setTimeout(() => {
+                        this.loader.classList.add('hidden');
+                    }, 300);
+                }
+            },
+            
+            setMessages: function(title, message) {
+                if (this.loaderTitle) this.loaderTitle.textContent = title;
+                if (this.loaderMessage) this.loaderMessage.textContent = message;
+            }
+        };
+
+        // Función getCookie disponible globalmente
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Inicializar el loader al cargar el DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            PageLoader.init();
+
+            // Ocultar el loader al terminar de cargar la página
+            window.addEventListener('load', function() {
+                PageLoader.hide();
+            });
+
+            // Ocultar también si se usa la caché del navegador (volver atrás)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    PageLoader.hide();
+                }
+            });
+        });
+
+        // Mostrar el loader solo cuando el usuario hace clic en un enlace o envía un formulario
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            // Si el enlace tiene data-download, manejamos la descarga vía fetch (igual que los formularios)
+            const downloadType = link.dataset.download;
+            if (downloadType) {
+                e.preventDefault();
+                // Asegurar que el loader global quede oculto inmediatamente al manejar descarga
+                try { PageLoader.hide(); } catch (err) {}
+                const hideGlobal = link.dataset.hideGlobalLoader === 'true';
+                const url = link.href;
+                const method = (link.dataset.method || 'GET').toUpperCase();
+
+                    if (!hideGlobal) PageLoader.show('Descargando...', 'Preparando tu archivo...');
+
+                fetch(url, {
+                    method: method,
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                }).then(async response => {
+                    if (!response.ok) {
+                        let text = '';
+                        try { text = await response.text(); } catch (err) {}
+                        if (!hideGlobal) PageLoader.hide();
+                        console.error('Error en descarga (status):', response.status, text);
+                        alert('Error al generar la descarga. Revisa la consola para más detalles.');
+                        return;
+                    }
+
+                    const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+                    if (contentType.includes('text/html') || contentType.includes('application/json')) {
+                        // Probablemente estamos recibiendo una página de error o login en vez del archivo
+                        const text = await response.text();
+                        console.error('Respuesta inesperada al solicitar el archivo (HTML/JSON):', text);
+                        try { PageLoader.hide(); } catch (err) {}
+                        alert('Error del servidor: revisa la consola (posible redirección o error).');
+                        return;
+                    }
+
+                    const blob = await response.blob();
+                    let filename = 'download';
+                    const dispo = response.headers.get('Content-Disposition');
+                    if (dispo) {
+                        const m = dispo.match(/filename\*?=(?:UTF-8''|)\"?([^\";]+)/i);
+                        if (m && m[1]) {
+                            filename = decodeURIComponent(m[1].replace(/\"/g, ''));
+                        } else {
+                            const m2 = dispo.match(/filename=(?:\"?)([^;\"]+)/i);
+                            if (m2 && m2[1]) filename = m2[1].replace(/\"/g, '');
+                        }
+                    }
+                    if (!/\.[a-z0-9]{1,8}$/i.test(filename)) {
+                        if (downloadType.toLowerCase().includes('zip')) filename = filename + '.zip';
+                        else if (downloadType.toLowerCase().includes('xlsx')) filename = filename + '.xlsx';
+                    }
+
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = blobUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+
+                    // Asegurar ocultado final
+                    try { PageLoader.hide(); } catch (err) {}
+                }).catch(err => {
+                    console.error('Error fetch descarga:', err);
+                    try { PageLoader.hide(); } catch (err) {}
+                    alert('Error al descargar. Revisa la consola.');
+                });
+
+                return;
+            }
+
+            // Si no es un enlace de descarga, proceder con comportamiento por defecto
+            if (link.getAttribute('target') !== '_blank' && link.href && !link.href.startsWith('#')) {
+                PageLoader.show('Cargando...', 'Un momento por favor');
+            }
+        });
+
+        // También mostrarlo al enviar formularios
+        document.addEventListener('submit', function(e) {
+            try {
+                const form = e.target;
+                if (!form || form.tagName !== 'FORM') return;
+
+                // Si el formulario indica que es una descarga (data-download), manejamos vía fetch
+                const downloadType = form.dataset.download;
+                if (downloadType) {
+                    e.preventDefault();
+                    // Asegurar que el loader global quede oculto inmediatamente al manejar descarga
+                    try { PageLoader.hide(); } catch (err) {}
+
+                    const hideGlobal = form.dataset.hideGlobalLoader === 'true';
+                    const url = form.action || window.location.href;
+                    const method = (form.method || 'POST').toUpperCase();
+                    const formData = new FormData(form);
+
+                    // Disable submit buttons in the form and show inline feedback
+                    const submitBtns = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
+                    const previousBtnStates = submitBtns.map(btn => ({ btn, disabled: btn.disabled, text: btn.innerHTML }));
+                    submitBtns.forEach(btn => {
+                        try { btn.disabled = true; } catch (e) {}
+                        try { btn.innerHTML = 'Generando...'; } catch (e) {}
+                    });
+
+                    if (!hideGlobal) {
+                        PageLoader.show('Descargando...', 'Preparando tu archivo...');
+                    }
+
+                    fetch(url, {
+                        method: method,
+                        body: formData,
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    }).then(async response => {
+                        if (!response.ok) {
+                            let text = '';
+                            try { text = await response.text(); } catch (err) {}
+                            if (!hideGlobal) PageLoader.hide();
+                            console.error('Error en descarga:', response.status, text);
+                            alert('Error al generar la descarga. Revisa la consola para más detalles.');
+                            submitBtns.forEach(s => { try { s.disabled = false; s.innerHTML = 'Descargar seleccionados (ZIP)'; } catch (e) {} });
+                            return;
+                        }
+
+                        const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+                        if (contentType.includes('text/html') || contentType.includes('application/json')) {
+                            const text = await response.text();
+                            console.error('Respuesta inesperada al solicitar el archivo (HTML/JSON):', text);
+                            try { PageLoader.hide(); } catch (err) {}
+                            alert('Error del servidor: revisa la consola (posible redirección o error).');
+                            submitBtns.forEach(s => { try { s.disabled = false; s.innerHTML = 'Descargar seleccionados (ZIP)'; } catch (e) {} });
+                            return;
+                        }
+
+                        const blob = await response.blob();
+                        // Intentar obtener filename desde Content-Disposition
+                        let filename = 'download';
+                        const dispo = response.headers.get('Content-Disposition');
+                        if (dispo) {
+                            const m = dispo.match(/filename\*?=(?:UTF-8''|)\"?([^\";]+)/i);
+                            if (m && m[1]) {
+                                filename = decodeURIComponent(m[1].replace(/\"/g, ''));
+                            } else {
+                                const m2 = dispo.match(/filename=(?:\"?)([^;\"]+)/i);
+                                if (m2 && m2[1]) filename = m2[1].replace(/\"/g, '');
+                            }
+                        }
+                        // Añadir extensión si falta
+                        if (!/\.[a-z0-9]{1,8}$/i.test(filename)) {
+                            if (downloadType.toLowerCase().includes('zip')) filename = filename + '.zip';
+                            else if (downloadType.toLowerCase().includes('xlsx')) filename = filename + '.xlsx';
+                        }
+
+                        const blobUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = blobUrl;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+
+                        // Asegurar ocultado final
+                        try { PageLoader.hide(); } catch (err) {}
+                        submitBtns.forEach(s => { try { s.disabled = false; s.innerHTML = 'Descargar seleccionados (ZIP)'; } catch (e) {} });
+                    }).catch(err => {
+                        console.error('Error fetch descarga:', err);
+                        try { PageLoader.hide(); } catch (err) {}
+                        alert('Error al descargar. Revisa la consola.');
+                        submitBtns.forEach(s => { try { s.disabled = false; s.innerHTML = 'Descargar seleccionados (ZIP)'; } catch (e) {} });
+                    });
+
+                    return;
+                }
+
+                // Comportamiento por defecto: mostrar loader al enviar formularios normales
+                PageLoader.show('Cargando...', 'Un momento por favor');
+            } catch (err) {
+                console.error('Error manejando submit:', err);
+                // En caso de fallo, seguir con comportamiento por defecto
+                PageLoader.show('Cargando...', 'Un momento por favor');
+            }
+        });
+
+
+        // Mostrar el loader antes de navegar a otra página
+        window.addEventListener('beforeunload', function() {
+            PageLoader.show('Cargando...', 'Un momento por favor');
+        });
+
+        // Función para cerrar mensajes
+        function closeMessage(button) {
+            const messageElement = button.closest('.message-alert');
+            messageElement.classList.add('fade-out');
+            setTimeout(() => {
+                messageElement.remove();
+            }, 300);
+        }
+
+        // Auto-cerrar mensajes después de 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message-alert');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    const closeButton = message.querySelector('button');
+                    if (closeButton && message.parentElement) {
+                        closeMessage(closeButton);
+                    }
+                }, 5000);
+            });
+        });
+
+        // Código del sidebar y navegación
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const collapseSidebar = document.getElementById('collapseSidebar');
+        const showSidebar = document.getElementById('showSidebar');
+        const mainContent = document.getElementById('mainContent');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        let isHidden = false;
+        let isMobile = window.innerWidth < 1024;
+        
+        function openSidebar() {
+            if (isMobile) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeSidebarFunc() {
+            if (isMobile) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function toggleSidebarVisibility() {
+            if (isMobile) return;
+            
+            isHidden = !isHidden;
+            
+            if (isHidden) {
+                sidebar.classList.add('sidebar-hidden');
+                mainContent.parentElement.classList.add('main-fullwidth');
+                showSidebar.classList.remove('opacity-0', 'pointer-events-none');
+                showSidebar.classList.add('opacity-100', 'pointer-events-auto');
+            } else {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.parentElement.classList.remove('main-fullwidth');
+                showSidebar.classList.add('opacity-0', 'pointer-events-none');
+                showSidebar.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+            
+            if (!isMobile) {
+                localStorage.setItem('sidebarHidden', isHidden);
+            }
+        }
+        
+        function initDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+        
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('darkMode', 'true');
+            }
+        }
+        
+        function toggleUserDropdown() {
+            if (userDropdown) {
+                userDropdown.classList.toggle('hidden');
+            }
+        }
+        
+        menuToggle?.addEventListener('click', openSidebar);
+        closeSidebar?.addEventListener('click', closeSidebarFunc);
+        overlay?.addEventListener('click', closeSidebarFunc);
+        collapseSidebar?.addEventListener('click', toggleSidebarVisibility);
+        showSidebar?.addEventListener('click', toggleSidebarVisibility);
+        darkModeToggle?.addEventListener('click', toggleDarkMode);
+        userMenuButton?.addEventListener('click', toggleUserDropdown);
+        
+        document.addEventListener('click', function(e) {
+            if (userMenuButton && userDropdown && 
+                !userMenuButton.contains(e.target) && 
+                !userDropdown.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (isMobile && !sidebar.classList.contains('-translate-x-full')) {
+                    closeSidebarFunc();
+                }
+                if (userDropdown && !userDropdown.classList.contains('hidden')) {
+                    userDropdown.classList.add('hidden');
+                }
+            }
+        });
+        
+        function handleResize() {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth < 1024;
+            
+            if (wasMobile && !isMobile) {
+                closeSidebarFunc();
+                const savedState = localStorage.getItem('sidebarHidden');
+                if (savedState === 'true') {
+                    isHidden = false;
+                    toggleSidebarVisibility();
+                } else {
+                    sidebar.classList.remove('-translate-x-full', 'sidebar-hidden');
+                    mainContent.parentElement.classList.remove('main-fullwidth');
+                    showSidebar.classList.add('opacity-0', 'pointer-events-none');
+                }
+            } else if (!wasMobile && isMobile) {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.parentElement.classList.remove('main-fullwidth');
+                showSidebar.classList.add('opacity-0', 'pointer-events-none');
+                sidebar.classList.add('-translate-x-full');
+                isHidden = false;
+            }
+        }
+        
+        function loadState() {
+            if (!isMobile) {
+                const saved = localStorage.getItem('sidebarHidden');
+                if (saved === 'true') {
+                    setTimeout(() => {
+                        toggleSidebarVisibility();
+                    }, 100);
+                }
+            }
+        }
+        
+        window.addEventListener('resize', handleResize);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            handleResize();
+            loadState();
+            initDarkMode();
+            
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.3s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Sistema de notificaciones
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationsButton = document.getElementById('notificationsButton');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const notificationBadge = document.getElementById('notificationBadge');
+            const notificationsList = document.getElementById('notificationsList');
+            const noNotifications = document.getElementById('noNotifications');
+            const markAllAsReadBtn = document.getElementById('markAllAsRead');
+            const notificationTemplate = document.getElementById('notificationTemplate');
+
+            notificationsButton?.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationsDropdown.classList.toggle('hidden');
+                
+                if (!notificationsDropdown.classList.contains('hidden')) {
+                    cargarNotificaciones();
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (notificationsDropdown && 
+                    !notificationsDropdown.contains(e.target) && 
+                    !notificationsButton.contains(e.target)) {
+                    notificationsDropdown.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !notificationsDropdown.classList.contains('hidden')) {
+                    notificationsDropdown.classList.add('hidden');
+                }
+            });
+
+            markAllAsReadBtn?.addEventListener('click', function() {
+                marcarTodasComoLeidas();
+            });
+
+            function cargarNotificaciones() {
+                fetch('/notificaciones/obtener/', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    actualizarListaNotificaciones(data.notificaciones);
+                    actualizarBadge(data.no_leidas);
+                })
+                .catch(error => {
+                    console.error('Error cargando notificaciones:', error);
+                });
+            }
+
+            function actualizarListaNotificaciones(notificaciones) {
+                const items = notificationsList.querySelectorAll('.notification-item');
+                items.forEach(item => item.remove());
+
+                if (notificaciones.length === 0) {
+                    noNotifications.classList.remove('hidden');
+                    return;
+                }
+
+                noNotifications.classList.add('hidden');
+
+                notificaciones.forEach(notif => {
+                    const notifElement = crearElementoNotificacion(notif);
+                    notificationsList.insertBefore(notifElement, noNotifications);
+                });
+            }
+
+            function crearElementoNotificacion(notif) {
+                const template = notificationTemplate.content.cloneNode(true);
+                const notifDiv = template.querySelector('.notification-item');
+                
+                notifDiv.dataset.notificationId = notif.id;
+                
+                if (notif.leida) {
+                    notifDiv.classList.add('border-transparent', 'opacity-75');
+                    const dot = notifDiv.querySelector('.notification-unread-dot');
+                    dot.classList.add('hidden');
+                } else {
+                    notifDiv.classList.add('border-primary', 'dark:border-primary-neon', 'unread');
+                }
+
+                const iconContainer = notifDiv.querySelector('.notification-icon');
+                const iconHTML = getIconoNotificacion(notif.tipo);
+                iconContainer.innerHTML = iconHTML;
+
+                notifDiv.querySelector('.notification-title').textContent = notif.titulo;
+                notifDiv.querySelector('.notification-message').textContent = notif.mensaje;
+                notifDiv.querySelector('.notification-time').textContent = notif.tiempo_relativo;
+
+                notifDiv.addEventListener('click', function() {
+                    marcarComoLeida(notif.id, notif.url);
+                });
+
+                return notifDiv;
+            }
+
+            function getIconoNotificacion(tipo) {
+                const iconos = {
+                    'solicitud_aceptada': '<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                    'solicitud_rechazada': '<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                    'invitacion_proyecto': '<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+                    'nueva_solicitud': '<svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+                    'cambio_rol': '<svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>',
+                    'default': '<svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                };
+                
+                return iconos[tipo] || iconos['default'];
+            }
+
+            function actualizarBadge(cantidad) {
+                if (cantidad > 0) {
+                    notificationBadge.textContent = cantidad > 99 ? '99+' : cantidad;
+                    notificationBadge.classList.remove('hidden');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
+            }
+
+            function marcarComoLeida(notifId, url) {
+                fetch(`/notificaciones/marcar-leida/${notifId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && url) {
+                        window.location.href = url;
+                    } else if (data.success) {
+                        cargarNotificaciones();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marcando como leída:', error);
+                });
+            }
+
+            function marcarTodasComoLeidas() {
+                fetch('/notificaciones/marcar-todas-leidas/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarNotificaciones();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marcando todas como leídas:', error);
+                });
+            }
+
+            setInterval(function() {
+                fetch('/notificaciones/contar/', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    actualizarBadge(data.no_leidas);
+                })
+                .catch(error => {
+                    console.error('Error en polling:', error);
+                });
+            }, 30000);
+
+            if (notificationBadge) {
+                fetch('/notificaciones/contar/', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    actualizarBadge(data.no_leidas);
+                });
+            }
+        });
+    </script>
+    {% endblock extra_js %}
+</body>
+</html>

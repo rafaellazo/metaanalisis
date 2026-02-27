@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi Proyecto de Metaanálisis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: '#FF896C',
+                        'primary-dark': '#FF5722',
+                        'primary-neon': '#FF6B35',
+                        'sidebar-bg': '#FF896C',
+                        'sidebar-dark': '#FF5722',
+                        'bg-main': '#ffffff',
+                        'bg-main-dark': '#1a1a1a',
+                        'text-main': '#333333',
+                        'text-main-dark': '#ffffff'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Inicializar dark mode ANTES de renderizar -->
+    <script>
+        (function() {
+            // Verificar si hay preferencia guardada o usar preferencia del sistema
+            const savedMode = localStorage.getItem('darkMode');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Si hay modo guardado, usarlo; sino usar preferencia del sistema
+            const isDark = savedMode === 'true' || (savedMode === null && prefersDark);
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen transition-colors duration-300">
+    
+    <!-- Header simple para auth -->
+    <header class="absolute top-0 left-0 right-0 z-20">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo y título (izquierda) -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden transition-colors duration-300">
+                        <img src="{% static 'core/templates/img/logo.png' %}" alt="PM Logo" class="w-full h-full object-cover rounded-full" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-full h-full bg-primary dark:bg-primary-neon flex items-center justify-center text-white font-bold text-xs transition-colors duration-300" style="display: none;">
+                            PM
+                        </div>
+                    </div>
+                    <a href="{% url 'core:home' %}" class="text-2xl font-bold text-primary dark:text-primary-neon tracking-wide hover:opacity-80 transition-all duration-300">
+                        PM
+                    </a>
+                </div>
+                
+                <!-- Toggle modo oscuro (derecha) -->
+                <div class="flex items-center space-x-4">
+                    <button 
+                        id="darkModeToggle" 
+                        class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-all duration-300 relative"
+                        aria-label="Cambiar tema"
+                    >
+                        <!-- Icono de Sol (modo claro activo) -->
+                        <svg 
+                            id="sunIcon" 
+                            class="w-5 h-5 transition-all duration-300 dark:opacity-0 dark:rotate-180 dark:scale-0" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        
+                        <!-- Icono de Luna (modo oscuro activo) -->
+                        <svg 
+                            id="moonIcon" 
+                            class="w-5 h-5 absolute top-2 left-2 transition-all duration-300 opacity-0 rotate-180 scale-0 dark:opacity-100 dark:rotate-0 dark:scale-100" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Contenido de la página -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts base -->
+    <script>
+        // Función para cambiar entre modo claro y oscuro
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const isDarkNow = html.classList.contains('dark');
+            
+            if (isDarkNow) {
+                // Cambiar a modo claro
+                html.classList.remove('dark');
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                // Cambiar a modo oscuro
+                html.classList.add('dark');
+                localStorage.setItem('darkMode', 'true');
+            }
+        }
+
+        // Inicialización después de cargar DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar el botón de dark mode
+            const darkModeBtn = document.getElementById('darkModeToggle');
+            if (darkModeBtn) {
+                darkModeBtn.addEventListener('click', toggleDarkMode);
+            }
+            
+            // Efecto de carga suave
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.3s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+        }, { once: true });
+    </script>
+    
+    <!-- Scripts específicos de la página -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

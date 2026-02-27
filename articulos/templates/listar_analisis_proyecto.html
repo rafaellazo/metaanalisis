@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Análisis de Artículos - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 p-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Supervisión</h1>
+            <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                <span>Volver</span>
+            </a>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">{{ proyecto.nombre }}</p>
+        
+        <!-- Tabs de Navegación -->
+        <div class="flex gap-2 border-b border-gray-200 dark:border-gray-700 mt-6 -mb-6">
+            <a href="{% url 'articulos:bandeja_revision' proyecto.id %}" class="px-6 py-3 border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 font-medium flex items-center space-x-2 transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+                <span>Revisión de Artículos</span>
+            </a>
+            <a href="{% url 'articulos:listar_analisis_proyecto' proyecto.id %}" class="px-6 py-3 border-b-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-medium flex items-center space-x-2 transition-all duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <span>📊 Análisis de Artículos</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Estadísticas del Proyecto -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-4 text-white">
+            <div class="text-3xl font-bold">{{ estadisticas.total_analisis }}</div>
+            <p class="text-blue-100 text-sm">Análisis Totales</p>
+        </div>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-4 text-white">
+            <div class="text-3xl font-bold">{{ estadisticas.completados }}</div>
+            <p class="text-green-100 text-sm">Completados</p>
+        </div>
+        <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-4 text-white">
+            <div class="text-3xl font-bold">{{ estadisticas.pendientes }}</div>
+            <p class="text-yellow-100 text-sm">Pendientes</p>
+        </div>
+        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-4 text-white">
+            <div class="text-3xl font-bold">{{ estadisticas.errores }}</div>
+            <p class="text-red-100 text-sm">Errores</p>
+        </div>
+    </div>
+
+    <!-- Tabla de Análisis -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Artículo</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Estado</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Analizado por</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Fecha</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Tokens</th>
+                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for analisis in analisis_page %}
+                    <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <td class="px-6 py-4">
+                            <div class="font-semibold text-gray-900 dark:text-white truncate" title="{{ analisis.articulo.titulo }}">
+                                {{ analisis.articulo.titulo|truncatewords:8 }}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ analisis.articulo.bibtex_key }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if analisis.estado == 'COMPLETADO' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                ✅ Completado
+                            </span>
+                            {% elif analisis.estado == 'PROCESANDO' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                ⚙️ Procesando
+                            </span>
+                            {% elif analisis.estado == 'PENDIENTE' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                                ⏳ Pendiente
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                ❌ Error
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                            {{ analisis.analizado_por.get_full_name|default:analisis.analizado_por.username }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                            {{ analisis.fecha_analisis|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                            {% if analisis.tokens_utilizados %}
+                            {{ analisis.tokens_utilizados }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if analisis.estado == 'COMPLETADO' %}
+                            <a href="{% url 'articulos:ver_resultados_analisis' analisis.id %}" 
+                               class="inline-block px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
+                                Ver Resultados
+                            </a>
+                            {% elif analisis.estado == 'ERROR' %}
+                            <div class="text-xs px-3 py-1" title="{{ analisis.mensaje_error }}">
+                                <strong>Error:</strong> {{ analisis.mensaje_error|truncatewords:8 }}
+                            </div>
+                            {% else %}
+                            <span class="text-xs text-gray-500">Análisis en progreso...</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-lg">📭 No hay análisis disponibles</p>
+                            <p class="text-sm">Comienza analizando artículos desde la sección de artículos.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    {% if paginator.num_pages > 1 %}
+    <div class="mt-6 flex justify-center items-center gap-2">
+        {% if analisis_page.has_previous %}
+        <a href="?page=1" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Primero</a>
+        <a href="?page={{ analisis_page.previous_page_number }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Anterior</a>
+        {% endif %}
+
+        <span class="px-4 py-2 text-gray-700 dark:text-gray-300">
+            Página {{ analisis_page.number }} de {{ paginator.num_pages }}
+        </span>
+
+        {% if analisis_page.has_next %}
+        <a href="?page={{ analisis_page.next_page_number }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Siguiente</a>
+        <a href="?page={{ paginator.num_pages }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">Último</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

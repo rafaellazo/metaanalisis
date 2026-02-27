@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analizar Artículo con IA - {{ articulo.titulo|truncatewords:5 }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 p-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">🤖 Analizar Artículo con IA</h1>
+            <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                ← Volver
+            </a>
+        </div>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">{{ articulo.titulo }}</p>
+    </div>
+
+    <!-- Artículo Info -->
+    <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 rounded-xl border border-blue-200 dark:border-blue-700 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-3">📄 Artículo a Analizar</h2>
+        <div class="space-y-2 text-sm">
+            <p><strong>Título:</strong> {{ articulo.titulo }}</p>
+            <p><strong>Proyecto:</strong> {{ proyecto.nombre }}</p>
+            {% if articulo.archivo_pdf %}
+            <p class="text-green-600 dark:text-green-400"><strong>✅ PDF disponible:</strong> {{ articulo.archivo_pdf|truncatechars:50 }}</p>
+            {% else %}
+            <p class="text-red-600 dark:text-red-400"><strong>❌ Sin PDF:</strong> No se puede analizar sin PDF</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if articulo.archivo_pdf %}
+    <!-- Formulario de Análisis -->
+    <form method="POST" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        {% csrf_token %}
+        
+        <!-- Seleccionar Variables -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                🔍 Seleccionar Variables para Analizar
+            </h2>
+            
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Las variables preseleccionadas del proyecto aparecen marcadas. Puedes agregar más si lo deseas.
+            </p>
+            
+            <!-- Campos Preseleccionados del Proyecto -->
+            <div class="bg-green-50 dark:bg-green-900 dark:bg-opacity-10 rounded-lg border border-green-200 dark:border-green-700 p-4 mb-6">
+                <h3 class="font-semibold text-green-900 dark:text-green-200 mb-3">✅ Variables del Proyecto (Preseleccionadas)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for campo in campos_plantilla %}
+                    <label class="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg border-2 border-green-300 dark:border-green-600 cursor-pointer hover:bg-green-100 dark:hover:bg-green-900 dark:hover:bg-opacity-30 transition">
+                        <input 
+                            type="checkbox" 
+                            name="campos_seleccionados" 
+                            value="{{ campo.id }}"
+                            checked
+                            class="w-4 h-4 text-green-600 dark:text-green-400"
+                        >
+                        <span class="ml-3">
+                            <strong>{{ campo.nombre }}</strong>
+                            <span class="text-gray-500 dark:text-gray-400 text-sm block">{{ campo.categoria }}</span>
+                        </span>
+                    </label>
+                    {% empty %}
+                    <p class="text-gray-500 dark:text-gray-400">No hay variables preseleccionadas</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Campos Disponibles para Agregar -->
+            {% if campos_disponibles %}
+            <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-10 rounded-lg border border-blue-200 dark:border-blue-700 p-4">
+                <h3 class="font-semibold text-blue-900 dark:text-blue-200 mb-3">➕ Agregar más Variables (Opcional)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for campo in campos_disponibles %}
+                    {% if campo not in campos_plantilla %}
+                    <label class="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg border border-blue-200 dark:border-blue-600 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 dark:hover:bg-opacity-30 transition">
+                        <input 
+                            type="checkbox" 
+                            name="campos_seleccionados" 
+                            value="{{ campo.id }}"
+                            class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                        >
+                        <span class="ml-3">
+                            <strong>{{ campo.nombre }}</strong>
+                            <span class="text-gray-500 dark:text-gray-400 text-sm block">{{ campo.categoria }}</span>
+                        </span>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Análisis Previo (si existe) -->
+        {% if analisis_previo %}
+        <div class="bg-yellow-50 dark:bg-yellow-900 dark:bg-opacity-10 rounded-lg border border-yellow-200 dark:border-yellow-700 p-4 mb-6">
+            <h3 class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">⚠️ Análisis Previo Disponible</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Este artículo ya fue analizado el {{ analisis_previo.fecha_analisis|date:"d/m/Y H:i" }}
+            </p>
+            <a href="{% url 'articulos:ver_resultados_analisis' analisis_previo.id %}" 
+               class="inline-block px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition">
+                Ver Resultados Anteriores
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Botón de Envío -->
+        <div class="flex gap-4">
+            <button 
+                type="submit"
+                class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+            >
+                <span>🚀 Iniciar Análisis</span>
+            </button>
+            <a 
+                href="{% url 'articulos:ver_articulos' proyecto.id %}"
+                class="px-6 py-3 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg transition"
+            >
+                Cancelar
+            </a>
+        </div>
+    </form>
+    {% else %}
+    <div class="bg-red-50 dark:bg-red-900 dark:bg-opacity-10 rounded-xl border border-red-200 dark:border-red-700 p-6 text-center">
+        <p class="text-red-700 dark:text-red-300 font-semibold">❌ No se puede analizar: El artículo no tiene PDF</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

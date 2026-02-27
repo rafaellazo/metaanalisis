@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel Forest Plot - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6" aria-label="Breadcrumb">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Panel Forest Plot</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Panel de Control - Forest Plot</h1>
+                    <p class="text-gray-600 dark:text-gray-400">Filtra y visualiza tus meta-análisis de forma interactiva</p>
+                </div>
+                <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>Volver</span>
+                </a>
+            </div>
+
+            <!-- Contador de artículos -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 dark:bg-opacity-20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Total de Artículos</span>
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ total_articulos }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-green-700 dark:text-green-300 font-medium">Artículos Filtrados</span>
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                    </div>
+                    <p id="articulosFiltrados" class="text-3xl font-bold text-green-900 dark:text-green-100">{{ total_articulos }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 dark:bg-opacity-20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-purple-700 dark:text-purple-300 font-medium">Con Datos Válidos</span>
+                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <p id="articulosConDatos" class="text-3xl font-bold text-purple-900 dark:text-purple-100">{{ total_articulos }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Filtros -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+                Filtros de Búsqueda
+            </h2>
+
+            <form id="filtrosForm" class="space-y-4">
+                <!-- Fila 1: Filtros de Año -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Año Publicación Desde
+                        </label>
+                        <input type="number" id="año_inicio" name="año_inicio" 
+                               min="1900" 
+                               max="2100"
+                               value="{{ año_minimo }}"
+                               placeholder="Ej: 2020"
+                               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Año Publicación Hasta
+                        </label>
+                        <input type="number" id="año_fin" name="año_fin"
+                               min="1900" 
+                               max="2100"
+                               value="{{ año_maximo }}"
+                               placeholder="Ej: 2024"
+                               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+
+                <!-- Fila 2: Variable Categórica/Descriptiva -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            Variable Descriptiva (opcional)
+                        </label>
+                        <select id="campo_categorico" name="campo_categorico" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">-- Sin filtro --</option>
+                            {% for campo in campos_categoricos %}
+                            <option value="{{ campo.codigo }}">{{ campo.nombre }} ({{ campo.get_categoria_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Información sobre cálculo automático -->
+                <div class="border-t border-gray-200 dark:border-gray-600 pt-4">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                        <div class="flex items-start space-x-3">
+                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">Cálculo Automático de Tamaño de Efecto</h4>
+                                <p class="text-xs text-blue-800 dark:text-blue-300">
+                                    El tamaño de efecto y error estándar se calcularán automáticamente usando los <strong>{{ campos_numericos.count }}</strong> campos numéricos disponibles en tu proyecto.
+                                    No es necesario seleccionar campos manualmente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex items-center justify-between pt-4">
+                    <button type="button" id="btnLimpiar" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Limpiar Filtros</span>
+                    </button>
+
+                    <button type="submit" class="px-6 py-3 bg-primary hover:bg-primary-dark dark:bg-primary-neon dark:hover:bg-primary text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span>Generar Forest Plot</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Área de Estadísticas -->
+    <div id="statsContainer" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Estadísticas del Meta-Análisis</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                    <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Efecto Promedio</span>
+                    <p id="efectoPromedio" class="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">-</p>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                    <span class="text-sm text-purple-700 dark:text-purple-300 font-medium">Error Estándar</span>
+                    <p id="errorPromedio" class="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">-</p>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                    <span class="text-sm text-green-700 dark:text-green-300 font-medium">IC 95% Inferior</span>
+                    <p id="icInferior" class="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">-</p>
+                </div>
+                <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+                    <span class="text-sm text-orange-700 dark:text-orange-300 font-medium">IC 95% Superior</span>
+                    <p id="icSuperior" class="text-2xl font-bold text-orange-900 dark:text-orange-100 mt-1">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área del Gráfico -->
+    <div id="plotContainer" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hidden">
+        <div class="p-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Forest Plot Interactivo
+                </h2>
+            </div>
+            <!-- Contenedor centrado y responsivo del gráfico -->
+            <div class="flex justify-center items-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                <div id="forestPlotChart" class="w-full bg-white dark:bg-gray-900 rounded-lg shadow-inner" style="height: 600px;"></div>
+            </div>
+            <!-- Nota metodológica -->
+            <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-xs text-blue-800 dark:text-blue-300">
+                        <p class="font-semibold mb-1">Nota metodológica:</p>
+                        <p>Las barras de error representan intervalos de confianza del 95%. El efecto combinado se calcula mediante ponderación por varianza inversa (modelo de efectos fijos).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje de Error/Info -->
+    <div id="messageContainer" class="rounded-xl border p-6 hidden">
+        <div class="flex items-start space-x-3">
+            <svg id="messageIcon" class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+            <div>
+                <h3 id="messageTitle" class="font-semibold mb-1"></h3>
+                <p id="messageText" class="text-sm"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Plotly CDN -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filtrosForm');
+    const btnLimpiar = document.getElementById('btnLimpiar');
+    const campoCategorico = document.getElementById('campo_categorico');
+    
+    // Limpiar filtros
+    btnLimpiar.addEventListener('click', function() {
+        form.reset();
+        valorCategoricoContainer.classList.add('hidden');
+        document.getElementById('plotContainer').classList.add('hidden');
+        document.getElementById('statsContainer').classList.add('hidden');
+        document.getElementById('messageContainer').classList.add('hidden');
+        document.getElementById('articulosFiltrados').textContent = '-';
+        document.getElementById('articulosConDatos').textContent = '-';
+    });
+    
+    // Enviar formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Recopilar datos (sin campos de efecto/error, se calculan automáticamente)
+        const formData = {
+            año_inicio: document.getElementById('año_inicio').value || null,
+            año_fin: document.getElementById('año_fin').value || null,
+            campo_categorico: campoCategorico.value || null,
+            valor_categorico: null
+        };
+        
+        try {
+            PageLoader.show('Generando Forest Plot...', 'Filtrando artículos y calculando estadísticas');
+            
+            const response = await fetch('{% url "articulos:filtrar_forest_plot" proyecto.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            PageLoader.hide();
+            
+            if (data.success) {
+                // Actualizar contadores
+                document.getElementById('articulosFiltrados').textContent = data.total_articulos;
+                document.getElementById('articulosConDatos').textContent = data.articulos_con_datos;
+                
+                if (data.plot_data) {
+                    // Mostrar estadísticas
+                    document.getElementById('efectoPromedio').textContent = data.efecto_promedio;
+                    document.getElementById('errorPromedio').textContent = data.error_promedio;
+                    document.getElementById('icInferior').textContent = data.intervalo_confianza_inferior;
+                    document.getElementById('icSuperior').textContent = data.intervalo_confianza_superior;
+                    document.getElementById('statsContainer').classList.remove('hidden');
+                    
+                    // Renderizar gráfico con configuración mejorada
+                    const config = {
+                        responsive: true,
+                        displayModeBar: true,
+                        displaylogo: false,
+                        modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d'],
+                        modeBarButtonsToAdd: [],
+                        toImageButtonOptions: {
+                            format: 'png',
+                            filename: 'forest_plot_' + new Date().toISOString().slice(0,10),
+                            height: 800,
+                            width: 1400,
+                            scale: 2.5
+                        },
+                        scrollZoom: false
+                    };
+                    
+                    Plotly.newPlot('forestPlotChart', data.plot_data.data, data.plot_data.layout, config);
+                    
+                    // Forzar el ajuste al contenedor inmediatamente
+                    setTimeout(() => {
+                        Plotly.Plots.resize(document.getElementById('forestPlotChart'));
+                    }, 50);
+                    
+                    // Mejorar interacción con el gráfico
+                    document.getElementById('forestPlotChart').on('plotly_hover', function(data) {
+                        document.getElementById('forestPlotChart').style.cursor = 'pointer';
+                    });
+                    
+                    document.getElementById('forestPlotChart').on('plotly_unhover', function(data) {
+                        document.getElementById('forestPlotChart').style.cursor = 'default';
+                    });
+                    
+                    document.getElementById('plotContainer').classList.remove('hidden');
+                    document.getElementById('messageContainer').classList.add('hidden');
+                    
+                    // Scroll suave al gráfico
+                    setTimeout(() => {
+                        document.getElementById('plotContainer').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center'
+                        });
+                    }, 100);
+                } else {
+                    // Mostrar mensaje informativo
+                    document.getElementById('plotContainer').classList.add('hidden');
+                    document.getElementById('statsContainer').classList.add('hidden');
+                    showMessage('info', 'Sin Resultados', data.mensaje || 'No hay datos disponibles para generar el gráfico');
+                }
+            } else {
+                showMessage('error', 'Error', data.error || 'Ocurrió un error al generar el gráfico');
+            }
+        } catch (error) {
+            PageLoader.hide();
+            showMessage('error', 'Error de Conexión', error.message);
+        }
+    });
+    
+    function showMessage(type, title, text) {
+        const container = document.getElementById('messageContainer');
+        const icon = document.getElementById('messageIcon');
+        const titleEl = document.getElementById('messageTitle');
+        const textEl = document.getElementById('messageText');
+        
+        // Reset classes
+        container.className = 'rounded-xl border p-6';
+        
+        if (type === 'error') {
+            container.classList.add('bg-red-50', 'dark:bg-red-900/20', 'border-red-200', 'dark:border-red-700');
+            titleEl.className = 'text-red-800 dark:text-red-300 font-semibold mb-1';
+            textEl.className = 'text-red-700 dark:text-red-400 text-sm';
+            icon.className = 'w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5';
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+        } else if (type === 'info') {
+            container.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'border-blue-200', 'dark:border-blue-700');
+            titleEl.className = 'text-blue-800 dark:text-blue-300 font-semibold mb-1';
+            textEl.className = 'text-blue-700 dark:text-blue-400 text-sm';
+            icon.className = 'w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5';
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+        }
+        
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        container.classList.remove('hidden');
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+</script>
+{% endblock %}

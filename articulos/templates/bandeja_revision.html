@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bandeja de Revisión - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Bandeja de Revisión</span>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <svg class="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Supervisión
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">{{ proyecto.nombre }}</p>
+                </div>
+                <a href="{% url 'articulos:ver_articulos' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span>Volver</span>
+                </a>
+            </div>
+
+            <!-- Tabs de Navegación -->
+            <div class="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+                <a href="{% url 'articulos:bandeja_revision' proyecto.id %}" class="px-6 py-3 border-b-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-medium flex items-center space-x-2 transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <span>Revisión de Artículos</span>
+                </a>
+                <a href="{% url 'articulos:listar_analisis_proyecto' proyecto.id %}" class="px-6 py-3 border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 font-medium flex items-center space-x-2 transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>📊 Análisis de Artículos</span>
+                </a>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="grid sm:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 dark:bg-opacity-20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-yellow-700 dark:text-yellow-300 font-medium">En Revisión</span>
+                        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{{ total_en_revision }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 dark:bg-opacity-20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-orange-700 dark:text-orange-300 font-medium">En Proceso</span>
+                        <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">{{ total_en_proceso }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-green-700 dark:text-green-300 font-medium">Aprobados</span>
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ total_aprobados }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 dark:bg-opacity-20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">En esta vista</span>
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ articulos.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-6">
+            <form method="GET" class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
+                    <select name="estado" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Todos los estados</option>
+                        <option value="EN_REVISION" {% if estado_filtro == 'EN_REVISION' %}selected{% endif %}>En Revisión ({{ total_en_revision }})</option>
+                        <option value="EN_PROCESO" {% if estado_filtro == 'EN_PROCESO' %}selected{% endif %}>En Proceso ({{ total_en_proceso }})</option>
+                        <option value="PENDIENTE" {% if estado_filtro == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+                        <option value="APROBADO" {% if estado_filtro == 'APROBADO' %}selected{% endif %}>Aprobado ({{ total_aprobados }})</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Colaborador</label>
+                    <select name="usuario" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-primary-neon focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Todos los colaboradores</option>
+                        {% for colab in colaboradores %}
+                        <option value="{{ colab.usuario.id }}" {% if usuario_filtro == colab.usuario.id|stringformat:"s" %}selected{% endif %}>
+                            {{ colab.usuario.get_full_name|default:colab.usuario.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-end gap-3 mt-6 md:mt-0">
+                    <button type="submit" class="px-6 py-2 bg-primary hover:bg-primary-dark dark:bg-primary-neon dark:hover:bg-primary text-white rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        <span>Filtrar</span>
+                    </button>
+                    {% if estado_filtro or usuario_filtro %}
+                    <a href="{% url 'articulos:bandeja_revision' proyecto.id %}" class="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200">
+                        Limpiar
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de artículos -->
+    {% if articulos %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Artículo</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Colaborador</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Progreso</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for articulo in articulos %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">{{ articulo.titulo }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ articulo.bibtex_key }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                {% if articulo.usuario_asignado %}
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                                    {{ articulo.usuario_asignado.first_name.0|default:articulo.usuario_asignado.username.0|upper }}
+                                </div>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">
+                                    {{ articulo.usuario_asignado.get_full_name|default:articulo.usuario_asignado.username }}
+                                </span>
+                                {% else %}
+                                <div class="w-8 h-8 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center text-white text-xs font-bold">
+                                    ?
+                                </div>
+                                <span class="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Sin asignar
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if articulo.total_campos > 0 %}
+                            <div class="space-y-2">
+                                <div>
+                                    <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                        <span>Completado</span>
+                                        <span>{{ articulo.campos_completados_count }}/{{ articulo.total_campos }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                        {% widthratio articulo.campos_completados_count articulo.total_campos 100 as progreso %}
+                                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: {{ progreso }}%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                        <span>Aprobado</span>
+                                        <span>{{ articulo.campos_aprobados_count }}/{{ articulo.total_campos }}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                        {% widthratio articulo.campos_aprobados_count articulo.total_campos 100 as progreso_aprobado %}
+                                        <div class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: {{ progreso_aprobado }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="text-xs text-gray-500 dark:text-gray-400 italic">Sin campos asignados</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+                                {% if articulo.estado == 'EN_REVISION' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:bg-opacity-30 dark:text-yellow-300
+                                {% elif articulo.estado == 'APROBADO' %}bg-green-100 text-green-800 dark:bg-green-900 dark:bg-opacity-30 dark:text-green-300
+                                {% elif articulo.estado == 'EN_PROCESO' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:bg-opacity-30 dark:text-orange-300
+                                {% else %}bg-gray-100 text-gray-800 dark:bg-gray-900 dark:bg-opacity-30 dark:text-gray-300{% endif %}">
+                                {{ articulo.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'articulos:workspace_articulo' articulo.id %}" 
+                               class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-dark dark:bg-primary-neon dark:hover:bg-primary text-white text-sm rounded-lg transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Revisar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-12 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+            </div>
+            <p class="text-gray-500 dark:text-gray-400">No hay artículos que coincidan con los filtros seleccionados</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

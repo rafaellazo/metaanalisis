@@ -1,0 +1,812 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - PM{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+    {% if user.is_superuser or user.profile.role.name == 'administrador' %}
+        <!-- ==================== DASHBOARD ADMINISTRADOR ==================== -->
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Panel Administrativo</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">Visión general del sistema</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Sistema activo</p>
+                        <div class="flex items-center justify-end gap-2">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white">Operacional</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Métricas Principales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Total Usuarios -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">+12%</span>
+                    </div>
+                    <p class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Total Usuarios</p>
+                    <p class="text-3xl font-bold text-blue-900 dark:text-white">{{ total_usuarios|default:0 }}</p>
+                </div>
+
+                <!-- Total Proyectos -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-purple-600 dark:text-purple-400">{{ proyectos_activos|default:0 }} activos</span>
+                    </div>
+                    <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Total Proyectos</p>
+                    <p class="text-3xl font-bold text-purple-900 dark:text-white">{{ total_proyectos|default:0 }}</p>
+                </div>
+
+                <!-- Total Artículos -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-6 border border-green-200 dark:border-green-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">+18 hoy</span>
+                    </div>
+                    <p class="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Artículos</p>
+                    <p class="text-3xl font-bold text-green-900 dark:text-white">{{ total_articulos|default:0 }}</p>
+                </div>
+
+                <!-- Revisiones Pendientes -->
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-6 border border-amber-200 dark:border-amber-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        {% if revisiones_pendientes > 0 %}
+                        <span class="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full">Urgente</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">En Revisión</p>
+                    <p class="text-3xl font-bold text-amber-900 dark:text-white">{{ revisiones_pendientes|default:0 }}</p>
+                </div>
+            </div>
+
+            <!-- Gráficos Principales del Sistema -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Gráfico Circular - Artículos por Estado -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Artículos del Sistema</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Distribución por estado</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_articulos_sistema }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                        </div>
+                    </div>
+                    
+                    {% if articulos_por_estado %}
+                        <!-- Gráfico de Dona -->
+                        <div class="relative flex items-center justify-center mb-6">
+                            <svg class="w-64 h-64 transform -rotate-90" viewBox="0 0 200 200">
+                                {% if articulos_por_estado %}
+                                    {% for estado in articulos_por_estado %}
+                                        {% widthratio estado.porcentaje 100 628 as circumference %}
+                                        <circle
+                                            cx="100"
+                                            cy="100"
+                                            r="80"
+                                            fill="none"
+                                            stroke="{{ estado.color }}"
+                                            stroke-width="32"
+                                            stroke-dasharray="{{ circumference }} 628"
+                                            stroke-dashoffset="{% if forloop.counter0 > 0 %}{% widthratio forloop.counter0 1 -628 %}{% else %}0{% endif %}"
+                                            opacity="0.9"
+                                        />
+                                    {% endfor %}
+                                {% endif %}
+                                <circle cx="100" cy="100" r="64" fill="currentColor" class="text-gray-50 dark:text-gray-900" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ total_articulos_sistema }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Artículos</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leyenda -->
+                        <div class="grid grid-cols-2 gap-3">
+                            {% for estado in articulos_por_estado %}
+                            <div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="w-4 h-4 rounded" style="background-color: {{ estado.color }}"></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{{ estado.nombre }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ estado.total }} ({{ estado.porcentaje }}%)</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400">Sin artículos registrados</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Gráfico de Barras - Proyectos por Categoría -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Proyectos por Categoría</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Top 5 categorías más usadas</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_proyectos }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                        </div>
+                    </div>
+                    
+                    {% if proyectos_por_categoria %}
+                        <!-- Gráfico de Barras Horizontales -->
+                        <div class="space-y-4 mb-6">
+                            {% for cat in proyectos_por_categoria %}
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-color: {{ cat.color }}20">
+                                            <div class="w-2 h-2 rounded-full" style="background-color: {{ cat.color }}"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{{ cat.nombre }}</span>
+                                    </div>
+                                    <span class="text-lg font-bold text-gray-900 dark:text-white ml-2">{{ cat.total }}</span>
+                                </div>
+                                <div class="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                                    <div class="absolute top-0 left-0 h-3 rounded-full transition-all duration-700 shadow-sm" 
+                                         style="width: {% widthratio cat.total total_proyectos 100 %}%; background-color: {{ cat.color }}">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Resumen -->
+                        <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Categorías activas</span>
+                                <span class="font-semibold text-gray-900 dark:text-white">{{ proyectos_por_categoria|length }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400">Sin categorías disponibles</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Estadísticas Adicionales del Sistema -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Estado de Proyectos -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Estado de Proyectos</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Activos</span>
+                            </div>
+                            <span class="text-xl font-bold text-green-600 dark:text-green-400">{{ proyectos_activos|default:0 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
+                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Total</span>
+                            </div>
+                            <span class="text-xl font-bold text-gray-600 dark:text-gray-400">{{ total_proyectos|default:0 }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">Tasa de actividad</span>
+                            <span class="font-bold text-primary dark:text-primary-neon">
+                                {% if total_proyectos > 0 %}
+                                    {% widthratio proyectos_activos total_proyectos 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solicitudes Pendientes -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Gestión de Solicitudes</h3>
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ solicitudes_pendientes|default:0 }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Solicitudes pendientes</p>
+                    </div>
+                    {% if solicitudes_pendientes > 0 %}
+                    <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
+                        <p class="text-xs text-amber-800 dark:text-amber-300 text-center">
+                            <span class="font-semibold">Atención requerida</span> - Hay solicitudes esperando aprobación
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Notificaciones del Sistema -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Centro de Notificaciones</h3>
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                            <svg class="w-10 h-10 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                            </svg>
+                            {% if notificaciones_sistema > 0 %}
+                            <div class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                                <span class="text-xs font-bold text-white">{{ notificaciones_sistema }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ notificaciones_sistema|default:0 }}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Notificaciones sin leer</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actividad Reciente y Usuarios Activos -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Actividad Reciente -->
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Actividad Reciente</h3>
+                    {% if actividad_reciente %}
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            {% for actividad in actividad_reciente %}
+                            <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="w-10 h-10 bg-primary/10 dark:bg-primary-neon/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-sm font-semibold text-primary dark:text-primary-neon">
+                                        {{ actividad.usuario.first_name|slice:":1"|upper }}{{ actividad.usuario.last_name|slice:":1"|upper }}
+                                    </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-900 dark:text-white">
+                                        <span class="font-medium">{{ actividad.usuario.get_full_name|default:actividad.usuario.username }}</span>
+                                        <span class="text-gray-600 dark:text-gray-400">modificó</span>
+                                        <span class="font-medium">{{ actividad.articulo.titulo|truncatewords:5 }}</span>
+                                    </p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ actividad.fecha_cambio|timesince }} atrás</span>
+                                        {% if actividad.articulo.proyecto %}
+                                        <span class="text-xs text-gray-400">•</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ actividad.articulo.proyecto.nombre|truncatewords:3 }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400">Sin actividad reciente</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Usuarios Más Activos -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Colaboradores</h3>
+                    {% if usuarios_activos %}
+                        <div class="space-y-3">
+                            {% for usuario in usuarios_activos %}
+                            <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                <div class="relative">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-semibold text-white">
+                                            {{ usuario.first_name|slice:":1"|upper }}{{ usuario.last_name|slice:":1"|upper }}
+                                        </span>
+                                    </div>
+                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ usuario.get_full_name|default:usuario.username }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ usuario.total_articulos }} artículo{{ usuario.total_articulos|pluralize }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                            </svg>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Sin usuarios activos</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Progreso del Sistema -->
+            {% if progreso_promedio_sistema %}
+            <div class="bg-gradient-to-r from-primary/10 to-primary-dark/10 dark:from-primary-neon/10 dark:to-primary/10 rounded-xl p-6 border border-primary/20">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Progreso General del Sistema</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Avance promedio de todos los proyectos</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold text-primary dark:text-primary-neon">{{ progreso_promedio_sistema }}%</p>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                    <div class="bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary h-4 rounded-full transition-all duration-1000" 
+                         style="width: {{ progreso_promedio_sistema }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    {% elif user.profile.role.name == 'investigador' %}
+        <!-- ==================== DASHBOARD INVESTIGADOR ==================== -->
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mi Espacio de Trabajo</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">Bienvenido de vuelta, {{ user.get_full_name|default:user.username }}</p>
+                </div>
+                <a href="{% url 'crear_proyecto' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary hover:shadow-lg text-white rounded-xl font-semibold transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Nuevo Proyecto
+                </a>
+            </div>
+
+            <!-- Métricas del Investigador -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Mis Proyectos -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Mis Proyectos</p>
+                    <p class="text-3xl font-bold text-blue-900 dark:text-white mb-2">{{ total_proyectos|default:0 }}</p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="text-purple-600 dark:text-purple-400">{{ proyectos_dueno|default:0 }} dueño</span>
+                        <span class="text-gray-400">•</span>
+                        <span class="text-blue-600 dark:text-blue-400">{{ proyectos_supervisor|default:0 }} supervisor</span>
+                    </div>
+                </div>
+
+                <!-- Mis Artículos -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-6 border border-green-200 dark:border-green-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">{{ progreso_personal }}%</span>
+                    </div>
+                    <p class="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Mis Artículos</p>
+                    <p class="text-3xl font-bold text-green-900 dark:text-white mb-2">{{ total_mis_articulos|default:0 }}</p>
+                    <p class="text-xs text-green-600 dark:text-green-400">{{ mis_articulos_aprobados|default:0 }} aprobados</p>
+                </div>
+
+                <!-- Tareas Pendientes -->
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-xl p-6 border border-amber-200 dark:border-amber-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1">Tareas Pendientes</p>
+                    <p class="text-3xl font-bold text-amber-900 dark:text-white mb-2">{{ tareas_pendientes|default:0 }}</p>
+                    <p class="text-xs text-amber-600 dark:text-amber-400">{{ mis_articulos_pendientes|default:0 }} artículos en proceso</p>
+                </div>
+
+                <!-- Notificaciones -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        {% if notificaciones_pendientes > 0 %}
+                        <span class="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full animate-pulse">Nuevo</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Notificaciones</p>
+                    <p class="text-3xl font-bold text-purple-900 dark:text-white mb-2">{{ notificaciones_pendientes|default:0 }}</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400">{{ solicitudes_pendientes|default:0 }} solicitudes • {{ articulos_por_revisar|default:0 }} revisiones</p>
+                </div>
+            </div>
+
+            <!-- Productividad Semanal -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Productividad esta Semana</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Tu rendimiento en los últimos 7 días</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{{ articulos_completados_semana|default:0 }}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Artículos completados</p>
+                        </div>
+                        <div class="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ campos_completados_semana|default:0 }}</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Campos completados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyectos Recientes y Acciones Rápidas -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Acciones Rápidas -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Acciones Rápidas</h3>
+                    <div class="space-y-2">
+                        <a href="{% url 'crear_proyecto' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/5 dark:hover:bg-primary-neon/10 transition-colors group">
+                            <div class="w-10 h-10 bg-primary/10 dark:bg-primary-neon/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5 text-primary dark:text-primary-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Crear Proyecto</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Inicia un nuevo metaanálisis</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'buscar_proyectos' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Buscar Proyectos</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Únete a colaboraciones</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'mis_proyectos' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors group">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Mis Proyectos</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Gestiona tu trabajo</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Proyectos Recientes -->
+                <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Proyectos Recientes</h3>
+                        <a href="{% url 'mis_proyectos' %}" class="text-sm text-primary dark:text-primary-neon hover:underline font-medium">Ver todos →</a>
+                    </div>
+                    
+                    {% if proyectos_recientes %}
+                        <div class="space-y-3">
+                            {% for item in proyectos_recientes %}
+                                <a href="{% url 'detalle_proyecto' item.proyecto.id %}" class="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary-neon hover:shadow-md transition-all">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-semibold text-gray-900 dark:text-white truncate">{{ item.proyecto.nombre }}</h4>
+                                            <div class="flex items-center gap-3 mt-2 flex-wrap">
+                                                <span class="inline-flex items-center text-xs text-gray-600 dark:text-gray-400">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                                    </svg>
+                                                    {{ item.proyecto.get_categoria_display }}
+                                                </span>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                                    {% if item.color_rol == 'purple' %}bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300
+                                                    {% elif item.color_rol == 'blue' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                                                    {% else %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300{% endif %}">
+                                                    {{ item.rol }}
+                                                </span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ item.mis_articulos }} artículo{{ item.mis_articulos|pluralize }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <div class="text-lg font-bold text-gray-900 dark:text-white">
+                                                {{ item.progreso|floatformat:0 }}%
+                                            </div>
+                                            <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                                                <div class="bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary h-2 rounded-full transition-all" 
+                                                     style="width: {{ item.progreso }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-20 h-20 mx-auto text-gray-300 dark:text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4 font-medium">No tienes proyectos aún</p>
+                            <a href="{% url 'crear_proyecto' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white rounded-lg font-semibold hover:shadow-lg transition-all">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Crear tu primer proyecto
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Gráficos de Análisis -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Proyectos por Categoría -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Mis Proyectos por Categoría</h3>
+                    {% if proyectos_por_categoria %}
+                        <div class="space-y-4">
+                            {% for cat in proyectos_por_categoria %}
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full" style="background-color: {{ cat.color }}"></div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ cat.nombre }}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ cat.total }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">({{ cat.porcentaje }}%)</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="h-2 rounded-full transition-all duration-500" 
+                                         style="width: {{ cat.porcentaje }}%; background-color: {{ cat.color }}"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400">Sin categorías disponibles</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mis Artículos por Estado -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Estado de Mis Artículos</h3>
+                    {% if mis_articulos_por_estado %}
+                        <div class="space-y-4">
+                            {% for estado in mis_articulos_por_estado %}
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full" style="background-color: {{ estado.color }}"></div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ estado.nombre }}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ estado.total }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">({{ estado.porcentaje }}%)</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="h-2 rounded-full transition-all duration-500" 
+                                         style="width: {{ estado.porcentaje }}%; background-color: {{ estado.color }}"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-gray-500 dark:text-gray-400">Sin artículos asignados</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mi Actividad Reciente -->
+            {% if mi_actividad %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mi Actividad Reciente</h3>
+                <div class="space-y-3 max-h-80 overflow-y-auto">
+                    {% for actividad in mi_actividad %}
+                    <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <div class="w-2 h-2 bg-primary dark:bg-primary-neon rounded-full mt-2 flex-shrink-0"></div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-900 dark:text-white">
+                                Modificaste <span class="font-medium">{{ actividad.articulo.titulo|truncatewords:8 }}</span>
+                            </p>
+                            <div class="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <span>{{ actividad.fecha_cambio|timesince }} atrás</span>
+                                {% if actividad.articulo.proyecto %}
+                                <span>•</span>
+                                <span>{{ actividad.articulo.proyecto.nombre|truncatewords:3 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <!-- ==================== DASHBOARD INVITADO ==================== -->
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    Cuenta Pendiente de Aprobación
+                </h1>
+                <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Tu cuenta está siendo revisada por nuestro equipo. Pronto recibirás un correo con la confirmación.
+                </p>
+                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 max-w-md mx-auto">
+                    <p class="text-sm text-blue-800 dark:text-blue-300">
+                        <strong>¿Necesitas ayuda?</strong><br>
+                        Contacta al administrador si tienes alguna pregunta sobre tu cuenta.
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- ==================== LANDING PAGE ==================== -->
+    <div class="max-w-7xl mx-auto space-y-20">
+        <!-- Hero Section -->
+        <div class="text-center py-20">
+            <div class="inline-block mb-6">
+                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-primary/10 dark:bg-primary-neon/10 text-primary dark:text-primary-neon">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    Plataforma Profesional de Metaanálisis
+                </span>
+            </div>
+            <h1 class="text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                Bienvenido a <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary">PM</span>
+            </h1>
+            <p class="text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed mb-10">
+                La plataforma líder en metaanálisis para investigación científica. 
+                Analiza, compara y extrae conclusiones de múltiples estudios con herramientas profesionales.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <a href="{% url 'register' %}" class="px-8 py-4 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white font-semibold rounded-xl hover:shadow-xl transition-all text-lg">
+                    Comenzar Gratis
+                </a>
+                <a href="{% url 'login' %}" class="px-8 py-4 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:border-primary dark:hover:border-primary-neon transition-colors text-lg">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Análisis Avanzados</h3>
+                <p class="text-gray-600 dark:text-gray-400">Realiza metaanálisis con herramientas estadísticas de última generación.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div class="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Colaboración</h3>
+                <p class="text-gray-600 dark:text-gray-400">Trabaja en equipo con investigadores de todo el mundo en tiempo real.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Seguridad Total</h3>
+                <p class="text-gray-600 dark:text-gray-400">Tus datos e investigaciones están protegidos con los más altos estándares.</p>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary-dark/10 dark:from-primary-neon/10 dark:to-primary/10 rounded-3xl"></div>
+            <div class="relative text-center py-20 px-8">
+                <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                    ¿Listo para comenzar tu metaanálisis?
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto">
+                    Únete a miles de investigadores que confían en PM para sus análisis científicos.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{% url 'register' %}" class="px-10 py-4 bg-gradient-to-r from-primary to-primary-dark dark:from-primary-neon dark:to-primary text-white font-bold rounded-xl hover:shadow-2xl transition-all text-lg">
+                        Registrarse Gratis
+                    </a>
+                    <a href="{% url 'login' %}" class="px-10 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold rounded-xl border-2 border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary-neon transition-all text-lg">
+                        Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-12">
+            <div class="text-center">
+                <p class="text-5xl font-bold text-primary dark:text-primary-neon mb-2">1000+</p>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Investigadores Activos</p>
+            </div>
+            <div class="text-center">
+                <p class="text-5xl font-bold text-primary dark:text-primary-neon mb-2">500+</p>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Proyectos Completados</p>
+            </div>
+            <div class="text-center">
+                <p class="text-5xl font-bold text-primary dark:text-primary-neon mb-2">10k+</p>
+                <p class="text-gray-600 dark:text-gray-400 text-lg">Artículos Analizados</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

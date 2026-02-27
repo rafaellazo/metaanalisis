@@ -1,0 +1,657 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Variables - {{ proyecto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-6">
+        <a href="{% url 'core:home' %}" class="hover:text-primary dark:hover:text-primary-neon">Inicio</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'mis_proyectos' %}" class="hover:text-primary dark:hover:text-primary-neon">Mis Proyectos</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <a href="{% url 'detalle_proyecto' proyecto.id %}" class="hover:text-primary dark:hover:text-primary-neon">{{ proyecto.nombre }}</a>
+        <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+        <span class="text-gray-700 dark:text-gray-300">Gestionar Variables</span>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="p-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center space-x-3 mb-2">
+                        <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                        </svg>
+                        <span>Repositorio de Variables</span>
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Gestiona variables globales del sistema y variables personalizadas de proyectos
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'detalle_proyecto' proyecto.id %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span>Volver</span>
+                    </a>
+                    <a href="{% url 'articulos:editar_plantilla_proyecto' proyecto.id %}" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                        </svg>
+                        <span>Editar Plantilla</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 dark:bg-opacity-20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-blue-700 dark:text-blue-300 font-medium">Variables Globales</span>
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ total_globales }}</p>
+            <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">Del sistema</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 dark:bg-opacity-20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-green-700 dark:text-green-300 font-medium">Repositorio Compartido</span>
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ total_personalizadas }}</p>
+            <p class="text-xs text-green-600 dark:text-green-400 mt-1">Variables de proyectos</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 dark:bg-opacity-20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-purple-700 dark:text-purple-300 font-medium">En Mi Plantilla</span>
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{{ plantilla.campos.count }}</p>
+            <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Activas en {{ proyecto.nombre }}</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 dark:bg-opacity-20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm text-orange-700 dark:text-orange-300 font-medium">Artículos del Proyecto</span>
+                <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold text-orange-900 dark:text-orange-100">{{ total_articulos }}</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="flex -mb-px">
+                <button onclick="cambiarTab('crear')" id="tab-btn-crear" 
+                    class="tab-button flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Crear Variable</span>
+                </button>
+                <button onclick="cambiarTab('globales')" id="tab-btn-globales" 
+                    class="tab-button flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Globales del Sistema ({{ total_globales }})</span>
+                </button>
+                <button onclick="cambiarTab('personalizadas')" id="tab-btn-personalizadas" 
+                    class="tab-button flex-1 py-4 px-6 text-center border-b-2 font-medium text-sm transition-all flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Repositorio Compartido ({{ total_personalizadas }})</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB: CREAR VARIABLE -->
+        <div id="tab-crear" class="tab-content p-6">
+            <div class="grid lg:grid-cols-2 gap-6">
+                
+                <!-- FORMULARIO: Variable GLOBAL -->
+                <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Variable Global</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Del sistema - Disponible para todos</p>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="crear_variable">
+                        <input type="hidden" name="es_global" value="on">
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Nombre <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nombre" required maxlength="200"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Ej: Tamaño de Muestra">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Código <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="codigo" required maxlength="50" pattern="[a-z_]+"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Ej: sample_size">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo letras minúsculas y guiones bajos</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Categoría <span class="text-red-500">*</span>
+                            </label>
+                            <select name="categoria" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                {% for key, value in categorias %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Tipo de Dato <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tipo_dato" id="tipo_dato_global" required onchange="toggleOpcionesGlobal()"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                {% for key, value in tipos_dato %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="opciones_global_container" class="hidden">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Opciones Válidas
+                            </label>
+                            <input type="text" name="opciones_validas"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Opción 1, Opción 2, Opción 3">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Separadas por comas</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Descripción
+                            </label>
+                            <textarea name="descripcion" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Descripción de la variable..."></textarea>
+                        </div>
+                        
+                        <div class="bg-blue-100 dark:bg-blue-800 dark:bg-opacity-30 border border-blue-300 dark:border-blue-600 rounded-lg p-4">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-semibold text-blue-800 dark:text-blue-200">Se creará sin proyecto asignado</p>
+                                    <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                        Estará disponible para que cualquier proyecto la agregue a su plantilla.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit"
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Crear Variable Global</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- FORMULARIO: Variable PERSONALIZADA -->
+                <div class="bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border-2 border-green-200 dark:border-green-700 rounded-xl p-6">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Variable Personalizada</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Nace en {{ proyecto.nombre }} - Visible para otros</p>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="crear_variable">
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Nombre <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nombre" required maxlength="200"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Ej: Criterio de Exclusión Específico">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Código <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="codigo" required maxlength="50" pattern="[a-z_]+"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Ej: exclusion_custom">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo letras minúsculas y guiones bajos</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Categoría <span class="text-red-500">*</span>
+                            </label>
+                            <select name="categoria" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                {% for key, value in categorias %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Tipo de Dato <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tipo_dato" id="tipo_dato_personalizada" required onchange="toggleOpcionesPersonalizada()"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                {% for key, value in tipos_dato %}
+                                <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="opciones_personalizada_container" class="hidden">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Opciones Válidas
+                            </label>
+                            <input type="text" name="opciones_validas"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Opción 1, Opción 2, Opción 3">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Descripción
+                            </label>
+                            <textarea name="descripcion" rows="3"
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="Descripción..."></textarea>
+                        </div>
+                        
+                        <div class="bg-green-100 dark:bg-green-800 dark:bg-opacity-30 border border-green-300 dark:border-green-600 rounded-lg p-4">
+                            <div class="flex items-start space-x-3">
+                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-semibold text-green-800 dark:text-green-200">Acción automática</p>
+                                    <p class="text-xs text-green-700 dark:text-green-300 mt-1">
+                                        Se creará con proyecto asignado "{{ proyecto.nombre }}". Se agregará automáticamente a tu plantilla y se asignará a tus {{ total_articulos }} artículo(s). Otros usuarios podrán verla en el repositorio compartido.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit"
+                            class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Crear Variable Personalizada</span>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB: VARIABLES GLOBALES -->
+        <div id="tab-globales" class="tab-content p-6 hidden">
+            <div class="bg-blue-50 dark:bg-blue-900 dark:bg-opacity-20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        Variables del sistema sin proyecto asignado, disponibles para todos los proyectos.
+                    </p>
+                </div>
+            </div>
+            
+            {% if variables_globales_agrupadas %}
+                {% for categoria, campos in variables_globales_agrupadas.items %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                        {{ categoria }}
+                    </h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for item in campos %}
+                        <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-all">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ item.campo.nombre }}</h4>
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">Global</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" title="Click para copiar">{{ item.campo.codigo }}</code>
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mb-2">{{ item.campo.get_tipo_dato_display }}</p>
+                            {% if item.campo.descripcion %}
+                            <p class="text-sm text-gray-600 dark:text-gray-400 italic mb-2">{{ item.campo.descripcion|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            <div class="flex items-center gap-2 text-xs mb-3">
+                                {% if item.en_plantilla %}
+                                <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>En mi plantilla</span>
+                                </span>
+                                {% else %}
+                                <form method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="agregar_campos">
+                                    <input type="hidden" name="campos_agregar" value="{{ item.campo.id }}">
+                                    <button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center space-x-1 px-2 py-1 border border-blue-300 dark:border-blue-600 rounded hover:bg-blue-50 dark:hover:bg-blue-900">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <span>Agregar</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if item.creado_por_mi %}
+                                <span class="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded text-xs">Creada por ti</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p>No hay variables globales del sistema</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- TAB: VARIABLES PERSONALIZADAS (REPOSITORIO COMPARTIDO) -->
+        <div id="tab-personalizadas" class="tab-content p-6 hidden">
+            <div class="bg-green-50 dark:bg-green-900 dark:bg-opacity-20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-6">
+                <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-green-800 dark:text-green-200">
+                        Repositorio compartido de variables personalizadas creadas por usuarios en cualquier proyecto. Las creadas por ti se agregan automáticamente a tu proyecto, las de otros puedes agregarlas manualmente.
+                    </p>
+                </div>
+            </div>
+            
+            {% if variables_personalizadas_agrupadas %}
+                {% for categoria, items in variables_personalizadas_agrupadas.items %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                        {{ categoria }}
+                    </h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for item in items %}
+                        <div class="bg-white dark:bg-gray-700 border-2 {% if item.es_de_este_proyecto %}border-green-400 dark:border-green-500{% else %}border-gray-200 dark:border-gray-600{% endif %} rounded-lg p-4 hover:shadow-lg transition-all">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ item.campo.nombre }}</h4>
+                                <div class="flex flex-col items-end gap-1">
+                                    {% if item.es_de_este_proyecto %}
+                                    <span class="px-2 py-1 text-xs rounded-full bg-green-500 text-white font-semibold">
+                                        De este proyecto
+                                    </span>
+                                    {% elif item.es_de_otro_proyecto %}
+                                    <span class="px-2 py-1 text-xs rounded-full bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200" title="Proviene de: {{ item.proyecto_origen }}">
+                                        Otro proyecto
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Personal</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                <code class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" title="Click para copiar">{{ item.campo.codigo }}</code>
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mb-2">{{ item.campo.get_tipo_dato_display }}</p>
+                            {% if item.campo.descripcion %}
+                            <p class="text-sm text-gray-600 dark:text-gray-400 italic mb-2">{{ item.campo.descripcion|truncatewords:15 }}</p>
+                            {% endif %}
+                            {% if item.proyecto_origen %}
+                            <p class="text-xs text-orange-600 dark:text-orange-400 mb-2 flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                </svg>
+                                <span>Nació en: <strong>{{ item.proyecto_origen }}</strong></span>
+                            </p>
+                            {% endif %}
+                            
+                            <div class="flex flex-wrap items-center gap-2 text-xs mb-3">
+                                {% if item.en_plantilla %}
+                                <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>En mi plantilla</span>
+                                </span>
+                                {% elif not item.es_de_este_proyecto %}
+                                <form method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="agregar_campos">
+                                    <input type="hidden" name="campos_agregar" value="{{ item.campo.id }}">
+                                    <button type="submit" class="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 flex items-center space-x-1 px-2 py-1 border border-green-300 dark:border-green-600 rounded hover:bg-green-50 dark:hover:bg-green-900">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                        <span>Agregar</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if item.en_uso %}
+                                <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded">En uso</span>
+                                {% endif %}
+                                {% if item.creado_por_mi %}
+                                <span class="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded text-xs">Creada por ti</span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if item.puede_eliminar and item.es_de_este_proyecto %}
+                            <form method="POST" onsubmit="return confirm('¿Eliminar esta variable del repositorio compartido?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="accion" value="eliminar_variable">
+                                <input type="hidden" name="campo_id" value="{{ item.campo.id }}">
+                                <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 flex items-center space-x-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    <span>Eliminar</span>
+                                </button>
+                            </form>
+                            {% elif item.tiene_aprobados and item.es_de_este_proyecto %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 italic flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>No se puede eliminar: tiene datos aprobados</span>
+                            </p>
+                            {% elif item.es_de_otro_proyecto %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 italic flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Solo {{ item.proyecto_origen }} puede eliminarla</span>
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <p class="mb-2">El repositorio compartido está vacío</p>
+                    <button onclick="cambiarTab('crear')" class="text-sm text-primary dark:text-primary-neon hover:underline">
+                        Crear tu primera variable personalizada
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function cambiarTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary', 'dark:border-primary-neon', 'dark:text-primary-neon');
+        btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+    });
+    
+    document.getElementById('tab-' + tab).classList.remove('hidden');
+    
+    const activeBtn = document.getElementById('tab-btn-' + tab);
+    activeBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+    activeBtn.classList.add('border-primary', 'text-primary', 'dark:border-primary-neon', 'dark:text-primary-neon');
+    
+    localStorage.setItem('tabActivo', tab);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tabGuardado = localStorage.getItem('tabActivo') || 'crear';
+    cambiarTab(tabGuardado);
+});
+
+function toggleOpcionesGlobal() {
+    const tipoDato = document.getElementById('tipo_dato_global').value;
+    const container = document.getElementById('opciones_global_container');
+    
+    if (tipoDato === 'OPCIONES') {
+        container.classList.remove('hidden');
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
+function toggleOpcionesPersonalizada() {
+    const tipoDato = document.getElementById('tipo_dato_personalizada').value;
+    const container = document.getElementById('opciones_personalizada_container');
+    
+    if (tipoDato === 'OPCIONES') {
+        container.classList.remove('hidden');
+    } else {
+        container.classList.add('hidden');
+    }
+}
+
+{% if messages %}
+    {% for message in messages %}
+        Swal.fire({
+            icon: '{{ message.tags|default:"info" }}' === 'success' ? 'success' : 
+                  '{{ message.tags|default:"info" }}' === 'error' ? 'error' : 
+                  '{{ message.tags|default:"info" }}' === 'warning' ? 'warning' : 'info',
+            title: '{{ message.tags|default:"info"|title }}',
+            text: '{{ message|escapejs }}',
+            timer: '{{ message.tags|default:"info" }}' === 'success' ? 3000 : 5000,
+            timerProgressBar: true,
+            showConfirmButton: true,
+            customClass: {
+                popup: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl',
+                title: 'text-gray-900 dark:text-white font-bold',
+                htmlContainer: 'text-gray-600 dark:text-gray-400',
+                confirmButton: 'px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all duration-200'
+            }
+        });
+    {% endfor %}
+{% endif %}
+
+document.querySelectorAll('input[name="codigo"]').forEach(input => {
+    input.addEventListener('input', function(e) {
+        this.value = this.value.toLowerCase().replace(/[^a-z_]/g, '');
+    });
+});
+
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function() {
+        const submitButtons = this.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach(btn => {
+            btn.disabled = true;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        });
+    });
+});
+
+document.querySelectorAll('code').forEach(code => {
+    code.addEventListener('click', function() {
+        navigator.clipboard.writeText(this.textContent);
+        
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Código copiado',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+    });
+});
+</script>
+
+{% endblock %}
