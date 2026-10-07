@@ -36,7 +36,7 @@ Clonar el repositorio y crear entorno virtual:
 
 ```bash
 git clone https://github.com/RonnyAreUneMi/Pymns.git
-cd pymetanalisis
+cd Pymns   # o el nombre de la carpeta donde quedó el proyecto
 python -m venv venv
 
 # Windows
@@ -52,18 +52,19 @@ Instalar dependencias:
 pip install -r requirements.txt
 ```
 
-Aplicar migraciones:
+Aplicar migraciones (ya vienen incluidas en el repositorio, **no** ejecutes `makemigrations`):
 
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
+
+Esto crea las tablas y los roles base: `administrador`, `investigador` e `invitado`.
 
 Cargar variables globales del sistema:
 
 ```bash
 python manage.py shell
-exec(open('fixtures_campos_metanalisis_completo.py').read())
+exec(open('fixtures_campos_metanalisis.py', encoding='utf-8').read())
 crear_campos_predefinidos()
 exit()
 ```
@@ -87,11 +88,15 @@ Crear archivo `.env` en la raíz del proyecto (opcional para desarrollo):
 ```
 SECRET_KEY=tu-clave-secreta
 DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=tu-email@gmail.com
 EMAIL_HOST_PASSWORD=tu-password
+OPENAI_API_KEY=sk-...   # solo para el análisis con IA
 ```
+
+Si no defines `EMAIL_HOST_USER` y `EMAIL_HOST_PASSWORD`, los correos se imprimen en la consola del servidor en lugar de enviarse.
 
 ### Base de Datos
 
@@ -122,6 +127,12 @@ Gestión de artículos, campos de metaanálisis, asignaciones y revisiones.
 6. **Análisis**: Visualización de estadísticas y progreso del proyecto
 
 ## Roles y Permisos
+
+### Aprobación de nuevas cuentas
+
+Todo usuario que se registra recibe el rol **invitado** y ve la pantalla *"Cuenta Pendiente de Aprobación"*. El rol no cambia solo: un administrador debe entrar a `/usuarios/list/` (o a `/admin/` → Profiles) y cambiarlo a **investigador** (puede crear proyectos) o **administrador**.
+
+Nota: *Colaborador* y *Supervisor* son roles **dentro de un proyecto**, no roles globales.
 
 ### Administrador
 Gestión completa del sistema, usuarios y proyectos globales.
@@ -177,29 +188,35 @@ Visualizaciones interactivas de progreso personal, estadísticas de proyecto y c
 
 ### Configuración de Base de Datos PostgreSQL
 
-Instalar PostgreSQL y crear base de datos:
+El proyecto usa SQLite si `POSTGRES_DB` no está definido. Para usar PostgreSQL, configura estas variables en el archivo `.env` de la raíz:
+
+```dotenv
+POSTGRES_DB=metanalisis_db
+POSTGRES_USER=metanalisis_user
+POSTGRES_PASSWORD=una-clave-segura
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+```
+
+Instala el adaptador de PostgreSQL junto con las dependencias:
 
 ```bash
-# Ubuntu/Debian
+pip install -r requirements.txt
+```
+
+En Ubuntu/Debian, instala el servidor y crea un usuario y una base de datos:
+
+```bash
 sudo apt-get install postgresql postgresql-contrib
-
-# Crear base de datos
-sudo -u postgres createdb metanalisis_db
-sudo -u postgres createuser metanalisis_user
+sudo -u postgres createuser --login metanalisis_user
+sudo -u postgres createdb --owner=metanalisis_user metanalisis_db
 ```
 
-Configurar variables de entorno para producción:
+En Windows, instala PostgreSQL y crea el usuario y la base de datos con pgAdmin o `psql`.
 
-```
-DEBUG=False
-ALLOWED_HOSTS=tu-dominio.com
-DATABASE_URL=postgres://metanalisis_user:password@localhost:5432/metanalisis_db
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
-```
+`python manage.py migrate` crea el esquema, pero no copia datos de SQLite. Antes de cambiar una base existente, conserva una copia de `db.sqlite3` y de los archivos en `media/`. La importación debe tener en cuenta que este proyecto crea roles, perfiles y plantillas mediante señales; una importación genérica con `dumpdata`/`loaddata` puede duplicar esos registros o cambiar cuál plantilla queda como predeterminada. Compara los conteos y las relaciones de ambas bases antes de retirar el respaldo SQLite.
 
-Migrar a PostgreSQL y recolectar archivos estáticos:
+Para un despliegue en producción, configura además `DEBUG=False` y `ALLOWED_HOSTS` en `.env`. Después aplica las migraciones y recolecta archivos estáticos:
 
 ```bash
 python manage.py migrate
@@ -207,7 +224,7 @@ python manage.py collectstatic --noinput
 
 # Cargar variables globales en producción
 python manage.py shell
-exec(open('fixtures_campos_metanalisis_completo.py').read())
+exec(open('fixtures_campos_metanalisis.py', encoding='utf-8').read())
 crear_campos_predefinidos()
 ```
 
@@ -221,4 +238,3 @@ gunicorn pymetanalis.wsgi:application --bind 0.0.0.0:8000
 ## Licencia
 
 Este proyecto es un producto UNEMI
-

@@ -618,7 +618,7 @@
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                         {% for articulo in grupo.list %}
-                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors article-row" data-estado="{{ articulo.estado }}" data-articulo-id="{{ articulo.id }}" data-doi="{{ articulo.doi|default:articulo.metadata_completos.doi }}">
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors article-row" data-estado="{{ articulo.estado }}" data-articulo-id="{{ articulo.id }}" data-doi="{% firstof articulo.doi articulo.metadata_completos.doi '' %}">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-start space-x-3">
                                                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark dark:from-primary-neon dark:to-primary flex items-center justify-center flex-shrink-0">
