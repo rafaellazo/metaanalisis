@@ -2,10 +2,15 @@
 
 from django.urls import path
 from . import views
+from . import views_saldo
 
 app_name = 'articulos'
 
 urlpatterns = [
+    path('consumo/', views_saldo.panel_consumo, name='panel_consumo'),
+    path('consumo/historial/', views_saldo.historial_consumo, name='historial_consumo'),
+    path('consumo/saldo.json', views_saldo.saldo_json, name='saldo_json'),
+    path('consumo/recalibrar/', views_saldo.recalibrar_saldo, name='recalibrar_saldo'),
 
     # ==================== GESTIÓN DE ARTÍCULOS ====================
     path('<int:proyecto_id>/',

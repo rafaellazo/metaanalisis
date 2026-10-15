@@ -722,6 +722,21 @@
                                     <span>Mis Proyectos</span>
                                 </a>
                             </div>
+                            <div class="menu-section">
+                                <p class="menu-section-title">Control de gasto IA</p>
+                                <a href="{% url 'articulos:panel_consumo' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 1.343-6 3s2.686 3 6 3 6-1.343 6-3-2.686-3-6-3Zm-6 3v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5M6 11V8c0-1.657 2.686-3 6-3s6 1.343 6 3v3"/>
+                                    </svg>
+                                    <span>Panel de consumo</span>
+                                </a>
+                                <a href="{% url 'articulos:historial_consumo' %}" class="flex items-center px-4 py-3 text-white hover:bg-white hover:bg-opacity-10 rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>
+                                    </svg>
+                                    <span>Historial de consumo</span>
+                                </a>
+                            </div>
 
                         {% elif user.profile.role.name == 'investigador' %}
                             <!-- MENÚ INVESTIGADOR -->
@@ -854,6 +869,13 @@
                         </div>
                         
                         <div class="flex items-center space-x-4">
+                            {% if saldo_consumo %}
+                            <a id="saldoHeader" href="{% url 'articulos:panel_consumo' %}" class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-semibold">
+                                <span class="{% if saldo_consumo.estado == 'ok' %}text-green-500{% elif saldo_consumo.estado == 'medio' %}text-yellow-500{% else %}text-red-500{% endif %}">●</span>
+                                <span>${{ saldo_consumo.saldo|default_if_none:"--"|floatformat:2 }}</span>
+                                {% if saldo_consumo.porcentaje is not None %}<span class="text-gray-500">{{ saldo_consumo.porcentaje|floatformat:0 }}%</span>{% endif %}
+                            </a>
+                            {% endif %}
                             <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition-colors">
                                 <svg id="sunIcon" class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -1063,6 +1085,26 @@
         </div>
     </div>
     {% endblock body_content %}
+    {% if saldo_consumo %}
+    <script>
+        (function () {
+            function actualizarSaldoHeader() {
+                fetch("{% url 'articulos:saldo_json' %}")
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        var header = document.getElementById('saldoHeader');
+                        if (!header || data.saldo === null) return;
+                        header.querySelector('span:nth-child(2)').textContent = '$' + data.saldo;
+                        header.querySelector('span:nth-child(3)').textContent =
+                            data.porcentaje === null ? '--' : Math.round(data.porcentaje) + '%';
+                    })
+                    .catch(function () {});
+            }
+            window.actualizarSaldoHeader = actualizarSaldoHeader;
+            window.setInterval(actualizarSaldoHeader, 30000);
+        }());
+    </script>
+    {% endif %}
     {% block extra_js %}
     <script>
         window.PageLoader = {
@@ -1617,6 +1659,7 @@
                     'invitacion_proyecto': '<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
                     'nueva_solicitud': '<svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
                     'cambio_rol': '<svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>',
+                    'alerta_saldo': '<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86l-7.82 13.5A2 2 0 004.2 20h15.6a2 2 0 001.73-2.64l-7.82-13.5a2 2 0 00-3.42 0z"></path></svg>',
                     'default': '<svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
                 };
                 

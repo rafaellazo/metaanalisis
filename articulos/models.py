@@ -683,6 +683,8 @@ class AnalisisArticulo(models.Model):
         blank=True,
         help_text='Cantidad de tokens usados en la llamada a OpenAI'
     )
+    tokens_entrada = models.IntegerField(default=0)
+    tokens_salida = models.IntegerField(default=0)
     costo_estimado = models.DecimalField(
         max_digits=10,
         decimal_places=4,
@@ -742,3 +744,120 @@ class AnalisisArticulo(models.Model):
             'ERROR': '❌',
         }
         return f"{estado_icon.get(self.estado, '?')} {self.articulo.titulo[:40]}... ({self.get_estado_display()})"
+
+
+class RegistroConsumoIAQuerySet(models.QuerySet):
+    def delete(self, *args, **kwargs):
+        raise models.ProtectedError(
+            'El libro contable de consumo no puede eliminarse.', self
+        )
+
+    def update(self, **kwargs):
+        raise models.ProtectedError(
+            'El libro contable de consumo no puede editarse.', self
+        )
+
+
+class RegistroConsumoIA(models.Model):
+    """Registro inmutable de cada llamada realizada a OpenAI."""
+
+    TIPO_OPERACION_CHOICES = [
+        ('ANALISIS_ARTICULO', 'Análisis de artículo'),
+        ('AJUSTE', 'Ajuste'),
+    ]
+
+    fecha = models.DateTimeField(auto_now_add=True, db_index=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='consumos_ia')
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='consumos_ia')
+    proyecto_nombre = models.CharField(max_length=255, blank=True)
+    articulo = models.ForeignKey(Articulo, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='consumos_ia')
+    articulo_titulo = models.CharField(max_length=500, blank=True)
+    archivo_bib = models.CharField(max_length=255, blank=True, db_index=True)
+    analisis = models.ForeignKey(AnalisisArticulo, on_delete=models.SET_NULL, null=True,
+                                 blank=True, related_name='registros_consumo')
+    tipo_operacion = models.CharField(max_length=30, choices=TIPO_OPERACION_CHOICES,
+                                      default='ANALISIS_ARTICULO')
+    modelo = models.CharField(max_length=100)
+    num_variables = models.PositiveIntegerField(default=0)
+    tokens_entrada = models.PositiveIntegerField(default=0)
+    tokens_cacheados = models.PositiveIntegerField(default=0)
+    tokens_salida = models.PositiveIntegerField(default=0)
+    precio_entrada_usado = models.DecimalField(max_digits=12, decimal_places=6)
+    precio_cache_usado = models.DecimalField(max_digits=12, decimal_places=6)
+    precio_salida_usado = models.DecimalField(max_digits=12, decimal_places=6)
+    costo_usd = models.DecimalField(max_digits=12, decimal_places=6, db_index=True)
+    exito = models.BooleanField(default=False)
+    mensaje_error = models.TextField(blank=True)
+
+    base_objects = models.Manager()
+    objects = RegistroConsumoIAQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = 'Registro de consumo IA'
+        verbose_name_plural = 'Registros de consumo IA'
+        ordering = ['-fecha']
+        indexes = [
+            models.Index(fields=['fecha']),
+            models.Index(fields=['proyecto']),
+            models.Index(fields=['archivo_bib']),
+            models.Index(fields=['costo_usd']),
+        ]
+        base_manager_name = 'base_objects'
+
+    def delete(self, *args, **kwargs):
+        raise models.ProtectedError(
+            'El libro contable de consumo no puede eliminarse.', self
+        )
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise models.ProtectedError(
+                'El libro contable de consumo no puede editarse.', self
+            )
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.fecha:%Y-%m-%d %H:%M} - ${self.costo_usd}'
+
+
+class CalibracionSaldo(models.Model):
+    saldo_base = models.DecimalField(max_digits=10, decimal_places=4)
+    fecha_calibracion = models.DateTimeField(auto_now_add=True)
+    registrado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                        related_name='calibraciones_saldo')
+    nota = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-fecha_calibracion']
+
+
+class GastoOpenAI(models.Model):
+    fecha = models.DateField(unique=True)
+    costo_real = models.DecimalField(max_digits=12, decimal_places=6)
+    moneda = models.CharField(max_length=3, default='USD')
+    sincronizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-fecha']
+
+
+class EstadoSincronizacion(models.Model):
+    unica = models.BooleanField(default=True, unique=True)
+    ultima_sincronizacion = models.DateTimeField(null=True, blank=True)
+    en_curso = models.BooleanField(default=False)
+
+
+class AlertaSaldo(models.Model):
+    calibracion = models.ForeignKey(CalibracionSaldo, on_delete=models.CASCADE,
+                                    related_name='alertas')
+    umbral = models.PositiveIntegerField()
+    creada_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['calibracion', 'umbral'],
+                                    name='alerta_saldo_calibracion_umbral_unica')
+        ]

@@ -105,6 +105,7 @@ class Notificacion(models.Model):
         ('nueva_solicitud', 'Nueva Solicitud'),  # ← Esta es la que necesitas
         ('cambio_rol', 'Cambio de Rol'),
         ('general', 'General'),
+        ('alerta_saldo', 'Alerta de saldo'),
     ]
     
     usuario = models.ForeignKey(

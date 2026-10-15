@@ -5274,6 +5274,8 @@ def analizar_articulo_view(request, articulo_id):
     """
     from .ia_analyzer import procesar_articulo_completo
     from .models import AnalisisArticulo
+    from django.conf import settings
+    from .servicios_saldo import saldo_actual
     
     try:
         articulo = Articulo.objects.get(id=articulo_id)
@@ -5302,6 +5304,11 @@ def analizar_articulo_view(request, articulo_id):
         
         # Obtener campos (variables) de la plantilla
         campos_plantilla = plantilla.campos.all()
+
+        if (settings.BLOQUEAR_ANALISIS_SIN_SALDO and
+                saldo_actual() is not None and saldo_actual() <= 0):
+            messages.error(request, 'No hay saldo disponible para realizar el análisis.')
+            return redirect('articulos:ver_articulos', proyecto.id)
         
         # SUPERVISORES y DUEÑO: pueden personalizar variables
         puede_personalizar = usuario_proyecto.rol_proyecto in ['SUPERVISOR', 'DUEÑO']
@@ -5549,7 +5556,13 @@ def ver_resultados_analisis(request, analisis_id):
                 'encontrados': encontrados,
                 'no_encontrados': no_encontrados,
                 'porcentaje': round(porcentaje_encontrados, 1),
-            }
+            },
+            'es_administrador': (
+                request.user.is_superuser or
+                getattr(getattr(request.user, 'profile', None), 'role', None) and
+                request.user.profile.role.name == 'administrador'
+            ),
+            'registro_consumo': analisis.registros_consumo.first(),
         }
         
         return render(request, 'resultados_analisis.html', context)
@@ -5614,4 +5627,3 @@ def listar_analisis_proyecto(request, proyecto_id):
     except Exception as e:
         messages.error(request, f"Error: {str(e)}")
         return redirect('mis_proyectos')
-

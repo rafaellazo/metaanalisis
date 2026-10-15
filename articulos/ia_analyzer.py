@@ -316,7 +316,7 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
         
         # Llamar a OpenAI
         response = client.chat.completions.create(
-            model="gpt-5-mini",  # 🆕 Usando gpt-5-mini (mejor precisión)
+            model=settings.OPENAI_MODELO_ANALISIS,
             messages=[
                 {
                     "role": "system",
@@ -330,6 +330,13 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
             max_completion_tokens=8000,
         )
         
+        usage = getattr(response, 'usage', None)
+        tokens_input = int(getattr(usage, 'prompt_tokens', 0) or 0)
+        tokens_output = int(getattr(usage, 'completion_tokens', 0) or 0)
+        usage_details = getattr(usage, 'prompt_tokens_details', None)
+        tokens_cacheados = int(getattr(usage_details, 'cached_tokens', 0) or 0)
+        tokens_total = tokens_input + tokens_output
+
         # Extraer respuesta
         texto_respuesta = response.choices[0].message.content.strip() if response.choices[0].message.content else ""
         
@@ -339,7 +346,10 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
                 "exito": False,
                 "error": "OpenAI devolvió una respuesta vacía. Intenta de nuevo o reduce el número de variables.",
                 "resultados": None,
-                "tokens": 0,
+                "tokens": tokens_total,
+                "tokens_entrada": tokens_input,
+                "tokens_cacheados": tokens_cacheados,
+                "tokens_salida": tokens_output,
                 "tiempo": time.time() - inicio_tiempo
             }
         
@@ -349,17 +359,15 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
         # Parsear JSON
         resultado_json = json.loads(texto_respuesta)
         
-        # Calcular tokens
-        tokens_input = response.usage.prompt_tokens
-        tokens_output = response.usage.completion_tokens
-        tokens_total = tokens_input + tokens_output
-        
         tiempo_total = time.time() - inicio_tiempo
         
         return {
             "exito": True,
             "resultados": resultado_json.get("analisis", {}),
             "tokens": tokens_total,
+            "tokens_entrada": tokens_input,
+            "tokens_cacheados": tokens_cacheados,
+            "tokens_salida": tokens_output,
             "tiempo": tiempo_total,
             "error": None
         }
@@ -370,7 +378,10 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
             "exito": False,
             "error": f"Error parseando respuesta JSON: {str(e)}. Respuesta: {texto_respuesta[:200]}",
             "resultados": None,
-            "tokens": 0,
+            "tokens": locals().get("tokens_total", 0),
+            "tokens_entrada": locals().get("tokens_input", 0),
+            "tokens_cacheados": locals().get("tokens_cacheados", 0),
+            "tokens_salida": locals().get("tokens_output", 0),
             "tiempo": tiempo_total
         }
     
@@ -380,7 +391,10 @@ def analizar_articulo_con_ia(texto_articulo, campos_a_buscar):
             "exito": False,
             "error": f"Error en llamada a OpenAI: {str(e)}",
             "resultados": None,
-            "tokens": 0,
+            "tokens": locals().get("tokens_total", 0),
+            "tokens_entrada": locals().get("tokens_input", 0),
+            "tokens_cacheados": locals().get("tokens_cacheados", 0),
+            "tokens_salida": locals().get("tokens_output", 0),
             "tiempo": tiempo_total
         }
 
@@ -406,11 +420,12 @@ def guardar_analisis_en_bd(articulo, proyecto, campos_analizados, resultados_ia,
     """
     from .models import AnalisisArticulo
     
-    # Calcular costo (estimado)
-    # GPT-4o mini: ~$0.00015 por 1K input tokens, ~$0.0006 por 1K output tokens
-    costo_input = (resultados_ia.get("input_tokens", 0) / 1000) * 0.00015
-    costo_output = (resultados_ia.get("output_tokens", 0) / 1000) * 0.0006
-    costo_total = costo_input + costo_output
+    tokens_entrada = resultados_ia.get("tokens_entrada", 0)
+    tokens_salida = resultados_ia.get("tokens_salida", 0)
+    from pymetanalis.settings import calcular_costo_usd
+    costo_total = calcular_costo_usd(
+        tokens_entrada, resultados_ia.get("tokens_cacheados", 0), tokens_salida
+    )
     
     analisis = AnalisisArticulo.objects.create(
         articulo=articulo,
@@ -418,7 +433,9 @@ def guardar_analisis_en_bd(articulo, proyecto, campos_analizados, resultados_ia,
         resultados=resultados_ia.get("resultados", {}),
         estado='COMPLETADO' if resultados_ia.get("exito") else 'ERROR',
         tokens_utilizados=tokens,
-        costo_estimado=costo_total if costo_total > 0 else None,
+        tokens_entrada=tokens_entrada,
+        tokens_salida=tokens_salida,
+        costo_estimado=costo_total,
         tiempo_procesamiento=int(resultados_ia.get("tiempo", 0)),
         analizado_por=usuario,
         mensaje_error=resultados_ia.get("error", "")
@@ -476,18 +493,7 @@ def procesar_articulo_completo(articulo, campos_a_buscar, usuario):
         # Paso 3: Analizar con IA
         resultado_ia = analizar_articulo_con_ia(texto_extraido, campos_a_buscar)
         
-        if not resultado_ia["exito"]:
-            return {
-                "exito": False,
-                "analisis": None,
-                "mensaje": resultado_ia["error"],
-                "detalles": {
-                    "tokens": resultado_ia["tokens"],
-                    "tiempo": resultado_ia["tiempo"]
-                }
-            }
-        
-        # Paso 4: Guardar en BD
+        # Paso 4: Guardar siempre el resultado, incluso si OpenAI devolvió error.
         analisis = guardar_analisis_en_bd(
             articulo=articulo,
             proyecto=articulo.proyecto,
@@ -496,6 +502,20 @@ def procesar_articulo_completo(articulo, campos_a_buscar, usuario):
             usuario=usuario,
             tokens=resultado_ia["tokens"]
         )
+        from .servicios_saldo import registrar_consumo, sincronizar_si_corresponde
+        registrar_consumo(resultado_ia, articulo, campos_a_buscar, usuario, analisis)
+        sincronizar_si_corresponde()
+
+        if not resultado_ia["exito"]:
+            return {
+                "exito": False,
+                "analisis": analisis,
+                "mensaje": resultado_ia["error"],
+                "detalles": {
+                    "tokens": resultado_ia["tokens"],
+                    "tiempo": resultado_ia["tiempo"]
+                }
+            }
         
         return {
             "exito": True,

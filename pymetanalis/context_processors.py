@@ -1,6 +1,7 @@
 # pymetanalis/context_processors.py
 
 from pymetanalis.models import UsuarioProyecto
+from django.core.cache import cache
 
 def user_project_roles(request):
     """
@@ -46,4 +47,23 @@ def user_project_roles(request):
                 role_name in ['administrador', 'investigador']
             )
     
+    return context
+
+
+def saldo_consumo_ia(request):
+    context = {'saldo_consumo': None}
+    if not request.user.is_authenticated:
+        return context
+    role = getattr(getattr(request.user, 'profile', None), 'role', None)
+    if not (request.user.is_superuser or (role and role.name == 'administrador')):
+        return context
+    key = f'saldo_consumo_ia:{request.user.pk}'
+    cached = cache.get(key)
+    if cached is None:
+        from articulos.servicios_saldo import estado_saldo, porcentaje_restante, saldo_actual
+        saldo = saldo_actual()
+        cached = {'saldo': saldo, 'porcentaje': porcentaje_restante(),
+                  'estado': estado_saldo()}
+        cache.set(key, cached, 15)
+    context['saldo_consumo'] = cached
     return context

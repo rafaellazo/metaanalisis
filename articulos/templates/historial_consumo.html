@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Historial de consumo IA{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold">Historial de consumo</h1><a href="?{{ request.GET.urlencode }}&formato=csv" class="px-3 py-2 bg-green-600 text-white rounded">CSV</a></div>
+  <form class="grid md:grid-cols-4 gap-3 mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow">
+    <input name="desde" type="date" value="{{ filtros.desde }}" class="border rounded px-2 py-1"><input name="hasta" type="date" value="{{ filtros.hasta }}" class="border rounded px-2 py-1">
+    <input name="buscar" placeholder="Artículo" value="{{ filtros.buscar }}" class="border rounded px-2 py-1">
+    <select name="orden" class="border rounded px-2 py-1"><option value="reciente">Más reciente</option><option value="antiguo">Más antiguo</option><option value="mayor">Mayor gasto</option><option value="menor">Menor gasto</option></select>
+    <button class="px-3 py-2 bg-blue-600 text-white rounded">Filtrar</button>
+  </form>
+  <div class="grid md:grid-cols-4 gap-3 mb-6">
+    <div class="p-4 bg-white dark:bg-gray-800 rounded shadow">Total: ${{ resumen.total|default:0|floatformat:4 }}</div><div class="p-4 bg-white dark:bg-gray-800 rounded shadow">Análisis: {{ resumen.cantidad }}</div><div class="p-4 bg-white dark:bg-gray-800 rounded shadow">Promedio: ${{ resumen.promedio|default:0|floatformat:4 }}</div><div class="p-4 bg-white dark:bg-gray-800 rounded shadow">Mayor: ${{ resumen.mayor|default:0|floatformat:4 }}</div>
+  </div>
+  <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-xl shadow"><table class="w-full text-sm"><thead><tr class="border-b"><th class="p-3 text-left">Fecha</th><th class="p-3 text-left">Artículo</th><th class="p-3 text-left">Proyecto</th><th class="p-3 text-left">Archivo</th><th class="p-3 text-left">Usuario</th><th class="p-3 text-left">Costo USD</th><th class="p-3 text-left">Estado</th></tr></thead><tbody>{% for item in registros %}<tr class="border-b"><td class="p-3">{{ item.fecha|date:"d/m/Y H:i" }}</td><td class="p-3">{{ item.articulo_titulo }}</td><td class="p-3">{{ item.proyecto_nombre }}</td><td class="p-3">{{ item.archivo_bib }}</td><td class="p-3">{{ item.usuario|default:"-" }}</td><td class="p-3">${{ item.costo_usd|floatformat:4 }}</td><td class="p-3">{% if item.exito %}Éxito{% else %}Error{% endif %}</td></tr>{% empty %}<tr><td colspan="7" class="p-6 text-center">No hay registros.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="mt-4 flex gap-3">{% if registros.has_previous %}<a href="?page={{ registros.previous_page_number }}" class="text-blue-600">Anterior</a>{% endif %}<span>Página {{ registros.number }} de {{ registros.paginator.num_pages }}</span>{% if registros.has_next %}<a href="?page={{ registros.next_page_number }}" class="text-blue-600">Siguiente</a>{% endif %}</div>
+</div>
+{% endblock %}

@@ -161,6 +161,94 @@ sistema-metanalisis/
 
 ## Características Avanzadas
 
+### Control de gasto y consumo de IA
+
+El sistema registra el consumo de cada análisis realizado con OpenAI y ofrece
+un control administrativo del saldo y del gasto acumulado. Estas funciones
+están disponibles únicamente para usuarios administradores:
+
+- **Panel de consumo** (`/articulos/consumo/`): muestra el saldo disponible,
+  el porcentaje restante, el gasto registrado desde la calibración, la fecha de
+  la última sincronización y una gráfica del gasto diario.
+- **Calibración del saldo**: permite registrar o recalibrar el saldo base en
+  USD. Cada calibración queda asociada al administrador que la registró y se
+  utiliza como punto de partida para calcular el saldo actual.
+- **Alertas de saldo**: genera notificaciones administrativas cuando el saldo
+  alcanza los umbrales configurados (50 %, 20 %, 10 % o el saldo mínimo).
+- **Historial de consumo** (`/articulos/consumo/historial/`): presenta cada
+  operación con fecha, artículo, proyecto, archivo `.bib`, usuario, costo y
+  estado. Incluye resumen de total, cantidad de análisis, promedio y mayor
+  costo.
+- **Filtros y ordenamiento**: el historial permite filtrar por fechas y
+  artículo, y ordenar por fecha o costo.
+- **Exportación**: el botón `CSV` descarga el historial filtrado para
+  conservarlo o analizarlo externamente.
+
+#### Configuración de la sincronización
+
+La aplicación calcula un costo estimado usando los tokens registrados. Para
+consultar el costo oficial de la organización en OpenAI, configura estas
+variables en el archivo `.env`:
+
+```dotenv
+OPENAI_ADMIN_KEY=sk-...
+OPENAI_PROJECT_ID=proj_...       # opcional
+SYNC_MIN_INTERVALO_MINUTOS=60   # opcional; valor predeterminado: 60
+```
+
+La sincronización se programa automáticamente al abrir el panel y después de
+un análisis, respetando el intervalo mínimo configurado. Si no se configura
+`OPENAI_ADMIN_KEY`, el sistema continúa mostrando los costos estimados y no
+realiza llamadas a la API de costos de OpenAI.
+
+También puede ejecutarse manualmente como respaldo:
+
+```bash
+python manage.py sincronizar_gasto_openai
+```
+
+El comando manual requiere una calibración vigente y `OPENAI_ADMIN_KEY`.
+
+### Ejecución correcta en Windows
+
+Desde la carpeta raíz del proyecto, crea y activa el entorno virtual una sola
+vez e instala las dependencias:
+
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+En cada nueva sesión de terminal, activa el entorno y prepara la base de datos:
+
+```powershell
+venv\Scripts\Activate.ps1
+python manage.py check
+python manage.py migrate
+```
+
+Si es una instalación nueva, carga los campos predefinidos y crea el usuario
+administrador:
+
+```powershell
+python manage.py shell
+exec(open('fixtures_campos_metanalisis.py', encoding='utf-8').read())
+crear_campos_predefinidos()
+exit()
+python manage.py createsuperuser
+```
+
+Finalmente, inicia el servidor de desarrollo:
+
+```powershell
+python manage.py runserver 127.0.0.1:8000
+```
+
+Accede a `http://127.0.0.1:8000/`. El comando
+`sincronizar_gasto_openai` no inicia el sitio; únicamente actualiza los costos
+oficiales de OpenAI cuando existe la configuración correspondiente.
+
 ### Plantillas Dinámicas
 Sistema flexible de variables globales y personalizadas por proyecto con múltiples tipos de datos.
 

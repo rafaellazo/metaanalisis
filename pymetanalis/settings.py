@@ -10,11 +10,36 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from decimal import Decimal
 from dotenv import load_dotenv
 from pathlib import Path
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_ADMIN_KEY = os.getenv('OPENAI_ADMIN_KEY', '')
+OPENAI_PROJECT_ID = os.getenv('OPENAI_PROJECT_ID', '')
+OPENAI_MODELO_ANALISIS = os.getenv('OPENAI_MODELO_ANALISIS', 'gpt-5-mini')
+PRECIO_ENTRADA_POR_MILLON = Decimal(os.getenv('PRECIO_ENTRADA_POR_MILLON', '0.25'))
+PRECIO_ENTRADA_CACHE_POR_MILLON = Decimal(os.getenv('PRECIO_ENTRADA_CACHE_POR_MILLON', '0.025'))
+PRECIO_SALIDA_POR_MILLON = Decimal(os.getenv('PRECIO_SALIDA_POR_MILLON', '2.00'))
+SALDO_MINIMO_USD = Decimal(os.getenv('SALDO_MINIMO_USD', '0.50'))
+BLOQUEAR_ANALISIS_SIN_SALDO = os.getenv('BLOQUEAR_ANALISIS_SIN_SALDO', 'False').lower() in ('1', 'true', 'yes')
+SYNC_MIN_INTERVALO_MINUTOS = int(os.getenv('SYNC_MIN_INTERVALO_MINUTOS', '60'))
+UMBRALES_ALERTA = [50, 20, 10]
+
+
+def calcular_costo_usd(tokens_entrada, tokens_cacheados, tokens_salida,
+                       precio_entrada=None, precio_cache=None, precio_salida=None):
+    """Calcula el costo de una llamada usando los precios vigentes en settings."""
+    entrada = Decimal(tokens_entrada or 0)
+    cacheados = min(entrada, Decimal(tokens_cacheados or 0))
+    salida = Decimal(tokens_salida or 0)
+    p_entrada = Decimal(precio_entrada if precio_entrada is not None else PRECIO_ENTRADA_POR_MILLON)
+    p_cache = Decimal(precio_cache if precio_cache is not None else PRECIO_ENTRADA_CACHE_POR_MILLON)
+    p_salida = Decimal(precio_salida if precio_salida is not None else PRECIO_SALIDA_POR_MILLON)
+    return ((entrada - cacheados) / Decimal('1000000') * p_entrada
+            + cacheados / Decimal('1000000') * p_cache
+            + salida / Decimal('1000000') * p_salida).quantize(Decimal('0.000001'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,6 +109,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'pymetanalis.context_processors.user_project_roles',
+                'pymetanalis.context_processors.saldo_consumo_ia',
             ],
         },
     },
