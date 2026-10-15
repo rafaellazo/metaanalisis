@@ -1,0 +1,5 @@
+admin:
+damian
+123456789
+
+python manage.py sincronizar_gasto_openai
